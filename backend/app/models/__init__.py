@@ -13,9 +13,42 @@ from werkzeug.security import generate_password_hash
 import random
 
 
+def create_indexes():
+    """Cria índices para otimizar performance do feed"""
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("""
+            CREATE INDEX IF NOT EXISTS idx_publicacao_created_at 
+            ON publicacao(criada_em DESC)
+        """))
+        db.session.execute(text("""
+            CREATE INDEX IF NOT EXISTS idx_publicacao_categoria 
+            ON publicacao(categoria)
+        """))
+        db.session.execute(text("""
+            CREATE INDEX IF NOT EXISTS idx_publicacao_user_id 
+            ON publicacao(user_id)
+        """))
+        db.session.execute(text("""
+            CREATE INDEX IF NOT EXISTS idx_like_post_id 
+            ON like(publicacao_id)
+        """))
+        db.session.execute(text("""
+            CREATE INDEX IF NOT EXISTS idx_comentario_post_id 
+            ON comentario(publicacao_id)
+        """))
+        db.session.execute(text("""
+            CREATE INDEX IF NOT EXISTS idx_amizade_usuario_status 
+            ON amizade(user_id, status)
+        """))
+        db.session.commit()
+    except Exception as e:
+        print(f"[DB-Index-Error] Falha ao criar índices no banco: {e}")
+
 def init_db():
     """Cria tabelas e seed de dados iniciais (idêntico ao original)."""
     db.create_all()
+    create_indexes()
 
     usuarios_teste = [
         {"nome": "Usuário Teste", "email": "teste@eco.com", "senha": "123456"},
