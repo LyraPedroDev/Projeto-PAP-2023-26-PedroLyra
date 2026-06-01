@@ -29,7 +29,7 @@ def create_app(config_class=Config) -> Flask:
                           'http://localhost:5173',
                           'http://127.0.0.1:5173',
                       ],
-                      async_mode='threading',
+                      async_mode=None,
                       manage_session=False,
                       logger=True,
                       engineio_logger=True)
