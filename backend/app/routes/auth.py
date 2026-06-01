@@ -25,14 +25,20 @@ def login():
 
 @auth_bp.route('/api/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    nome = data.get("nome")
-    email = data.get('email')
-    senha = data.get('senha')
+    try:
+        data = request.get_json()
+        nome = data.get("nome")
+        email = data.get('email')
+        senha = data.get('senha')
 
-    usuario, erro = registrar_usuario(nome, email, senha)
+        usuario, erro = registrar_usuario(nome, email, senha)
 
-    if erro:
-        return jsonify({"sucesso": False, "mensagem": erro}), 400
+        if erro:
+            return jsonify({"sucesso": False, "mensagem": erro}), 400
 
-    return jsonify({"sucesso": True, "mensagem": "Conta criada com sucesso!"})
+        return jsonify({"sucesso": True, "mensagem": "Conta criada com sucesso!"})
+    except Exception as e:
+        import traceback
+        print(f"[Register-Error] Falha crítica no registro de usuário: {e}")
+        traceback.print_exc()
+        return jsonify({"sucesso": False, "mensagem": f"Erro interno ao processar cadastro: {str(e)}"}), 500
