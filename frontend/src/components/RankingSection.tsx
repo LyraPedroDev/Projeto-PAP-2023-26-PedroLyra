@@ -41,7 +41,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
     try {
       if (showToast) setIsRefreshing(true);
       
-      const res = await fetch('http://localhost:5000/api/ranking');
+      const res = await fetch('/api/ranking');
       const data = await res.json();
 
       if (res.ok) {

@@ -1,4 +1,4 @@
-const BASE = 'http://localhost:5000';
+const BASE = '';
 
 /** Opções comuns — credentials: 'include' envia o cookie de sessão Flask */
 const OPTS: RequestInit = {

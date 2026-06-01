@@ -64,7 +64,7 @@ export function LandingPage({ onEnter, isDarkMode, toggleTheme }: LandingPagePro
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/stats').then(r => r.json())
+    fetch('/api/stats').then(r => r.json())
       .then(d => setStats({ usuarios: Math.max(d.usuarios, 5), publicacoes: Math.max(d.publicacoes, 12), likes: Math.max(d.likes, 48), tarefas: Math.max(d.tarefas_completas, 30) }))
       .catch(() => {});
   }, []);

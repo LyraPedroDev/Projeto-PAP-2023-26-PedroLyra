@@ -185,7 +185,7 @@ function PostCard({
     if (commentsLoading) return;
     setCommentsLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${post.id}/comments?page=${pageToLoad}&limit=5`);
+      const response = await fetch(`/api/posts/${post.id}/comments?page=${pageToLoad}&limit=5`);
       const resData = await response.json();
       if (response.ok && resData.success) {
         if (pageToLoad === 1) {
@@ -215,7 +215,7 @@ function PostCard({
     if (!commentText.trim()) return;
     setSendingComment(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${post.id}/comments`, {
+      const response = await fetch(`/api/posts/${post.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ conteudo: commentText }),
@@ -242,7 +242,7 @@ function PostCard({
   // --- Deletar Comentário ---
   const handleDeleteComment = async (commentId: number) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${post.id}/comments/${commentId}`, {
+      const response = await fetch(`/api/posts/${post.id}/comments/${commentId}`, {
         method: 'DELETE'
       });
       const resData = await response.json();
@@ -407,7 +407,7 @@ function PostCard({
           {post.imagem_url && (
             <div style={{ overflow: 'hidden', maxHeight: 340, background: '#000' }}>
               <img 
-                src={`http://localhost:5000${post.imagem_url}`} 
+                src={`${post.imagem_url}`} 
                 alt="Upload Ecológico" 
                 style={{ width: '100%', objectFit: 'cover', display: 'block', opacity: 0.95 }} 
               />
@@ -649,7 +649,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
     
     try {
       const catQuery = catFiltro !== 'todos' ? `&categoria=${catFiltro}` : '';
-      const response = await fetch(`http://localhost:5000/api/feed/${userId}?page=${pageToLoad}&limit=5&filtro=${filtro}${catQuery}`);
+      const response = await fetch(`/api/feed/${userId}?page=${pageToLoad}&limit=5&filtro=${filtro}${catQuery}`);
       const resData = await response.json();
       
       if (response.ok && resData.success) {
@@ -737,7 +737,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
       fd.append('categoria', cat);
       if (img) fd.append('imagem', img);
 
-      const response = await fetch('http://localhost:5000/api/posts', {
+      const response = await fetch('/api/posts', {
         method: 'POST',
         body: fd
       });
@@ -771,7 +771,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   // --- 5. Operações de Curtidas ---
   const handleLike = async (postId: number) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, { method: 'POST' });
+      const response = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
       const resData = await response.json();
       if (!response.ok) {
         toast.error(resData.error || "Erro ao curtir post");
@@ -784,7 +784,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
 
   const handleUnlike = async (postId: number) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, { method: 'DELETE' });
+      const response = await fetch(`/api/posts/${postId}/like`, { method: 'DELETE' });
       const resData = await response.json();
       if (!response.ok) {
         toast.error(resData.error || "Erro ao remover like");
@@ -798,7 +798,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   // --- 6. Operações de CRUD do Post ---
   const handleDeletePost = async (postId: number) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
       const resData = await response.json();
       if (response.ok && resData.success) {
         toast.success("Iniciativa removida com sucesso.");
@@ -816,7 +816,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
 
   const handleEditPost = async (postId: number, text: string, category: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}`, {
+      const response = await fetch(`/api/posts/${postId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ descricao: text, categoria: category })

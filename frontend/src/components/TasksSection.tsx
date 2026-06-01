@@ -36,7 +36,7 @@ export function TasksSection({ userId }: TasksSectionProps) {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/tasks/user/${userId}`);
+        const res = await fetch(`/api/tasks/user/${userId}`);
         const data = await res.json();
 
         if (res.ok) {
@@ -63,7 +63,7 @@ export function TasksSection({ userId }: TasksSectionProps) {
     try {
       if (!currentStatus) {
         // COMPLETAR TAREFA
-        const res = await fetch('http://localhost:5000/api/tasks/complete', {
+        const res = await fetch('/api/tasks/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -109,7 +109,7 @@ export function TasksSection({ userId }: TasksSectionProps) {
         }
       } else {
         // DESMARCAR TAREFA
-        const res = await fetch('http://localhost:5000/api/tasks/uncomplete', {
+        const res = await fetch('/api/tasks/uncomplete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

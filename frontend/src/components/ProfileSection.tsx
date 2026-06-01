@@ -52,7 +52,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/profile/${userId}`);
+        const res = await fetch(`/api/profile/${userId}`);
         const data = await res.json();
 
         if (res.ok) {
@@ -93,7 +93,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
     e.preventDefault();
 
     try {
-      const res = await fetch('http://localhost:5000/api/profile/update', {
+      const res = await fetch('/api/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -140,7 +140,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/profile/change-password', {
+      const res = await fetch('/api/profile/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
