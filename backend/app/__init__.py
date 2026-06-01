@@ -5,14 +5,12 @@ from .extensions import db, cors, socketio
 
 
 def create_app(config_class=Config) -> Flask:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    backend_dir = os.path.dirname(current_dir)
-    root_dir = os.path.dirname(backend_dir)
-    dist_dir = os.path.join(root_dir, 'frontend', 'dist')
+    root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    build_dir = os.path.join(root_dir, 'frontend', 'build')
 
     app = Flask(__name__,
-                static_folder=dist_dir,
-                template_folder=dist_dir,
+                static_folder=build_dir,
+                template_folder=build_dir,
                 static_url_path='/')
     app.config.from_object(config_class)
 
