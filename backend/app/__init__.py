@@ -5,7 +5,15 @@ from .extensions import db, cors, socketio
 
 
 def create_app(config_class=Config) -> Flask:
-    app = Flask(__name__)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_dir = os.path.dirname(current_dir)
+    root_dir = os.path.dirname(backend_dir)
+    dist_dir = os.path.join(root_dir, 'frontend', 'dist')
+
+    app = Flask(__name__,
+                static_folder=dist_dir,
+                template_folder=dist_dir,
+                static_url_path='/')
     app.config.from_object(config_class)
 
     # Garantir que a pasta de uploads existe
@@ -23,12 +31,7 @@ def create_app(config_class=Config) -> Flask:
                   ])
 
     socketio.init_app(app,
-                      cors_allowed_origins=[
-                          'http://localhost:3000',
-                          'http://127.0.0.1:3000',
-                          'http://localhost:5173',
-                          'http://127.0.0.1:5173',
-                      ],
+                      cors_allowed_origins="*",
                       async_mode=None,
                       manage_session=False,
                       logger=True,
@@ -69,5 +72,22 @@ def create_app(config_class=Config) -> Flask:
     with app.app_context():
         from .models import init_db
         init_db()
+
+    # ── Servir o Frontend (React/Vite) ─────────────────────────────
+    from flask import send_from_directory, jsonify
+
+    @app.route('/', defaults={'path': ''})
+    @app.route('/<path:path>')
+    def serve(path):
+        if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+            return send_from_directory(app.static_folder, path)
+        if path.startswith("api/") or path.startswith("uploads/"):
+            return jsonify({
+                "success": False,
+                "error": "Recurso não encontrado",
+                "code": "NOT_FOUND",
+                "status_code": 404
+            }), 404
+        return send_from_directory(app.static_folder, 'index.html')
 
     return app
