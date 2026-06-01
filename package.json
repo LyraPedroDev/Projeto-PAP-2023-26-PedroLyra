@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev:backend": "set PYTHONUTF8=1&& cd backend && venv\\Scripts\\python app.py",
-    "dev:frontend": "wait-on http-get://localhost:5000 && npm run dev --prefix frontend",
+    "dev:frontend": "wait-on http-get://localhost:5000/api && npm run dev --prefix frontend",
     "dev": "concurrently -k -n \"backend,frontend\" -c \"yellow.bold,blue.bold\" \"npm run dev:backend\" \"npm run dev:frontend\""
   },
   "keywords": [],
