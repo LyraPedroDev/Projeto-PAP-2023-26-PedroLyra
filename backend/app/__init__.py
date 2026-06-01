@@ -21,12 +21,7 @@ def create_app(config_class=Config) -> Flask:
     db.init_app(app)
     cors.init_app(app,
                   supports_credentials=True,
-                  origins=[
-                      'http://localhost:3000',
-                      'http://127.0.0.1:3000',
-                      'http://localhost:5173',
-                      'http://127.0.0.1:5173',
-                  ])
+                  resources={r"/api/*": {"origins": "*"}})
 
     socketio.init_app(app,
                       cors_allowed_origins="*",
@@ -70,6 +65,7 @@ def create_app(config_class=Config) -> Flask:
     with app.app_context():
         from .models import init_db
         init_db()
+        print(f"📊 Banco de dados SQLite inicializado com sucesso em: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
     # ── Servir o Frontend (React/Vite) ─────────────────────────────
     from flask import send_from_directory, jsonify
