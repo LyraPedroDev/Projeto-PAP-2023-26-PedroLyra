@@ -5,6 +5,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Leaf, Sun, Moon, Sprout, Globe, Recycle } from 'lucide-react';
+import { LeafLogo } from './ui/LeafLogo';
 import { toast } from 'sonner';
 
 interface LoginPageProps {
@@ -224,7 +225,7 @@ export function LoginPage({ onLogin, initialIsLogin = true, onToggleMode, isDark
             >
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full blur-xl opacity-50"></div>
-                <Leaf className="text-green-600 dark:text-green-400 relative" size={64} />
+                <LeafLogo className="text-green-600 dark:text-green-400 relative" size={64} />
               </div>
             </motion.div>
             <CardTitle className="text-green-800 dark:text-green-300">

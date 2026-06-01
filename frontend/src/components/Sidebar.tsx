@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
-import { MessageCircle, Trophy, CheckSquare, Users, User, Leaf, Newspaper, LogOut, Sun, Moon, MessageSquareDot } from 'lucide-react';
+import { MessageCircle, Trophy, CheckSquare, Users, User, Newspaper, LogOut, Sun, Moon, MessageSquareDot } from 'lucide-react';
+import { LeafLogo } from './ui/LeafLogo';
 import { theme } from '../theme';
 
 // Incluir 'private' no tipo Section
@@ -47,7 +48,7 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
           flexShrink: 0, 
           boxShadow: isDarkMode ? '0 0 16px rgba(16,185,129,0.4)' : 'none' 
         }}>
-          <Leaf size={17} color="white" />
+          <LeafLogo size={17} color="white" />
         </div>
         <span style={{ fontWeight: 900, fontSize: 18, color: T.sidebarText, letterSpacing: '-0.03em' }}>EcoChat</span>
       </div>

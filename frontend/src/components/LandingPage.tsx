@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'motion/react';
-import { Sun, Moon, ArrowRight, Leaf, Star, Users, Zap, Shield, ChevronDown, MessageCircle, Trophy, Camera } from 'lucide-react';
+import { Sun, Moon, ArrowRight, Star, Users, Zap, Shield, ChevronDown, MessageCircle, Trophy, Camera } from 'lucide-react';
+import { LeafLogo } from './ui/LeafLogo';
 import landingBG from '../assets/landingpageBG.png';
 
 interface LandingPageProps {
@@ -82,7 +83,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 68, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 10, padding: '7px 8px', display: 'flex' }}>
-              <Leaf size={17} color="white" />
+              <LeafLogo size={17} color="white" />
             </div>
             <span style={{ fontWeight: 900, fontSize: 20, letterSpacing: '-0.03em', color: '#fff' }}>EcoChat</span>
           </div>
@@ -151,7 +152,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
               {/* Sidebar */}
               <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                  <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 7, padding: 5, display: 'flex' }}><Leaf size={12} color="white" /></div>
+                  <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 7, padding: 5, display: 'flex' }}><LeafLogo size={12} color="white" /></div>
                   <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>EcoChat</span>
                 </div>
                 {['🏠 Feed', '🤖 EcoBot', '🏆 Ranking', '👤 Perfil'].map(item => (
@@ -285,7 +286,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
       <footer style={{ background: '#020b05', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '36px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 8, padding: '5px 6px', display: 'flex' }}><Leaf size={13} color="white" /></div>
+            <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 8, padding: '5px 6px', display: 'flex' }}><LeafLogo size={13} color="white" /></div>
             <span style={{ fontWeight: 800, fontSize: 15, color: 'rgba(255,255,255,0.8)' }}>EcoChat</span>
           </div>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.03em' }}>Projeto Académico PAP 2023–2026 · Pedro Lyra</p>
