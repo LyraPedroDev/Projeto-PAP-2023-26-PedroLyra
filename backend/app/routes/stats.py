@@ -6,7 +6,7 @@ from ..extensions import db
 stats_bp = Blueprint('stats', __name__)
 
 
-@stats_bp.route('/', methods=['GET'])
+@stats_bp.route('/api', methods=['GET'])
 def home():
     return jsonify({
         "mensagem": "🌱 EcoChat API está ativa!",
