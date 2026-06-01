@@ -10,28 +10,102 @@ type Page = 'landing' | 'login' | 'app';
 const THEME_KEY = 'ecochat_theme';
 
 export default function App() {
-  const [page, setPage] = useState<Page>('landing');
+  const [startAsRegister, setStartAsRegister] = useState<boolean>(() => {
+    return window.history.state?.startAsRegister ?? false;
+  });
+
+  const [page, setPage] = useState<Page>(() => {
+    const path = window.location.pathname;
+    const loggedIn = localStorage.getItem('user_id') !== null;
+    
+    if (path === '/app' && loggedIn) return 'app';
+    if (path === '/login') return 'login';
+    return 'landing';
+  });
+
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem(THEME_KEY);
     if (saved !== null) return saved === 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
-  const [userId, setUserId] = useState<number | null>(null);
+  const [userId, setUserId] = useState<number | null>(() => {
+    const saved = localStorage.getItem('user_id');
+    return saved ? Number(saved) : null;
+  });
 
   useEffect(() => {
     localStorage.setItem(THEME_KEY, isDarkMode ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
+  // Sincronizar history na inicialização (F5)
+  useEffect(() => {
+    const path = window.location.pathname;
+    const loggedIn = localStorage.getItem('user_id') !== null;
+    
+    if (path === '/app') {
+      if (loggedIn) {
+        window.history.replaceState({ page: 'app', startAsRegister: false }, '', '/app');
+        if (!socket.connected) {
+          console.log('[App] Reconectando socket na inicialização...');
+          socket.connect();
+        }
+      } else {
+        setPage('landing');
+        window.history.replaceState({ page: 'landing', startAsRegister: false }, '', '/');
+      }
+    } else if (path === '/login') {
+      const isReg = window.history.state?.startAsRegister ?? false;
+      window.history.replaceState({ page: 'login', startAsRegister: isReg }, '', '/login');
+    } else {
+      window.history.replaceState({ page: 'landing', startAsRegister: false }, '', '/');
+    }
+  }, []);
+
+  // Listener do botão voltar/avançar (popstate)
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const statePage = event.state?.page ?? 'landing';
+      const isReg = event.state?.startAsRegister ?? false;
+      const loggedIn = localStorage.getItem('user_id') !== null;
+      
+      if (statePage === 'app' && !loggedIn) {
+        setPage('landing');
+        window.history.replaceState({ page: 'landing', startAsRegister: false }, '', '/');
+      } else {
+        setPage(statePage);
+        setStartAsRegister(isReg);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const toggleTheme = () => setIsDarkMode(d => !d);
+
+  const handleGoToSignup = () => {
+    setStartAsRegister(true);
+    setPage('login');
+    window.history.pushState({ page: 'login', startAsRegister: true }, '', '/login');
+  };
+
+  const handleGoToLogin = () => {
+    setStartAsRegister(false);
+    setPage('login');
+    window.history.pushState({ page: 'login', startAsRegister: false }, '', '/login');
+  };
+
+  const handleToggleLoginMode = (isLoginNow: boolean) => {
+    setStartAsRegister(!isLoginNow);
+    window.history.replaceState({ page: 'login', startAsRegister: !isLoginNow }, '', '/login');
+  };
 
   const handleLogin = (userData: { user_id: number; email: string }) => {
     setUserId(userData.user_id);
     setPage('app');
+    window.history.pushState({ page: 'app', startAsRegister: false }, '', '/app');
 
-    // Ligar o socket DEPOIS do login — o cookie de sessão já foi guardado
-    // pelo browser com o Set-Cookie da resposta do /api/login.
-    // Pequeno delay para garantir que o browser processou o cookie.
+    // Ligar o socket DEPOIS do login
     setTimeout(() => {
       if (!socket.connected) {
         console.log('[App] A ligar socket após login...');
@@ -41,7 +115,6 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    // Desligar socket antes de limpar sessão
     if (socket.connected) {
       socket.disconnect();
       console.log('[App] Socket desligado no logout');
@@ -51,13 +124,15 @@ export default function App() {
     localStorage.removeItem('user_id');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_name');
+    window.history.pushState({ page: 'landing', startAsRegister: false }, '', '/');
   };
 
   return (
     <div className={isDarkMode ? 'dark' : ''}>
       {page === 'landing' && (
         <LandingPage
-          onEnter={() => setPage('login')}
+          onLogin={handleGoToLogin}
+          onSignup={handleGoToSignup}
           isDarkMode={isDarkMode}
           toggleTheme={toggleTheme}
         />
@@ -65,6 +140,8 @@ export default function App() {
       {page === 'login' && (
         <LoginPage
           onLogin={handleLogin}
+          initialIsLogin={!startAsRegister}
+          onToggleMode={handleToggleLoginMode}
           isDarkMode={isDarkMode}
           toggleTheme={toggleTheme}
         />

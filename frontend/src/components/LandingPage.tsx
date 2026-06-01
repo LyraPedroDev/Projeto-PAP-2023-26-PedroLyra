@@ -4,7 +4,8 @@ import { Sun, Moon, ArrowRight, Leaf, Star, Users, Zap, Shield, ChevronDown, Mes
 import landingBG from '../assets/landingpageBG.png';
 
 interface LandingPageProps {
-  onEnter: () => void;
+  onLogin: () => void;
+  onSignup: () => void;
   isDarkMode: boolean;
   toggleTheme: () => void;
 }
@@ -53,7 +54,7 @@ const FEATS = [
   { icon: <Trophy size={22} />, title: 'Missões & Ranking', color: '#f59e0b', desc: 'Gamificação real. Completa desafios, acumula pontos e sobe no ranking global.', bullets: ['Missões diárias e semanais', 'Ranking entre amigos', 'Sistema de níveis e conquistas'] },
 ];
 
-export function LandingPage({ onEnter, isDarkMode, toggleTheme }: LandingPageProps) {
+export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: LandingPageProps) {
   const [stats, setStats] = useState({ usuarios: 5, publicacoes: 12, likes: 48, tarefas: 30 });
   const [scrolled, setScrolled] = useState(false);
 
@@ -87,15 +88,11 @@ export function LandingPage({ onEnter, isDarkMode, toggleTheme }: LandingPagePro
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <button onClick={toggleTheme}
-              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 8, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex' }}>
-              {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
-            <button onClick={onEnter}
+            <button onClick={onLogin}
               style={{ border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: '9px 20px', fontSize: 14, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
               Entrar
             </button>
-            <motion.button onClick={onEnter} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+            <motion.button onClick={onSignup} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
               style={{ background: 'linear-gradient(135deg,#10b981,#059669)', boxShadow: '0 0 22px rgba(16,185,129,0.45)', borderRadius: 10, padding: '9px 20px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
               Registar <ArrowRight size={13} />
             </motion.button>
@@ -127,11 +124,11 @@ export function LandingPage({ onEnter, isDarkMode, toggleTheme }: LandingPagePro
 
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}
             style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 72 }}>
-            <motion.button onClick={onEnter} whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(16,185,129,0.6)' }} whileTap={{ scale: 0.97 }}
+            <motion.button onClick={onSignup} whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(16,185,129,0.6)' }} whileTap={{ scale: 0.97 }}
               style={{ background: 'linear-gradient(135deg,#10b981,#059669)', boxShadow: '0 0 30px rgba(16,185,129,0.42)', borderRadius: 14, padding: '16px 36px', fontSize: 16, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
               <Zap size={18} /> Criar Conta — É Grátis
             </motion.button>
-            <motion.button onClick={onEnter} whileHover={{ scale: 1.03, background: 'rgba(255,255,255,0.1)' }} whileTap={{ scale: 0.97 }}
+            <motion.button onClick={onLogin} whileHover={{ scale: 1.03, background: 'rgba(255,255,255,0.1)' }} whileTap={{ scale: 0.97 }}
               style={{ border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)', borderRadius: 14, padding: '16px 36px', fontSize: 16, fontWeight: 600, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
               Iniciar Sessão <ArrowRight size={16} />
             </motion.button>
@@ -271,11 +268,11 @@ export function LandingPage({ onEnter, isDarkMode, toggleTheme }: LandingPagePro
               Gratuito, simples e com impacto real. Regista-te e começa hoje.
             </p>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <motion.button onClick={onEnter} whileHover={{ scale: 1.05, boxShadow: '0 0 55px rgba(16,185,129,0.6)' }} whileTap={{ scale: 0.97 }}
+              <motion.button onClick={onSignup} whileHover={{ scale: 1.05, boxShadow: '0 0 55px rgba(16,185,129,0.6)' }} whileTap={{ scale: 0.97 }}
                 style={{ background: 'linear-gradient(135deg,#10b981,#059669)', boxShadow: '0 0 35px rgba(16,185,129,0.4)', borderRadius: 14, padding: '18px 44px', fontSize: 17, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Zap size={20} /> Criar Conta Grátis
               </motion.button>
-              <button onClick={onEnter}
+              <button onClick={onLogin}
                 style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '18px 44px', fontSize: 17, fontWeight: 600, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
                 Já tenho conta <ArrowRight size={17} />
               </button>

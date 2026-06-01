@@ -9,12 +9,14 @@ import { toast } from 'sonner';
 
 interface LoginPageProps {
   onLogin: (userData: { user_id: number; email: string }) => void;
+  initialIsLogin?: boolean;
+  onToggleMode?: (isLogin: boolean) => void;
   isDarkMode: boolean;
   toggleTheme: () => void;
 }
 
-export function LoginPage({ onLogin, isDarkMode, toggleTheme }: LoginPageProps) {
-  const [isLogin, setIsLogin] = useState(true);
+export function LoginPage({ onLogin, initialIsLogin = true, onToggleMode, isDarkMode, toggleTheme }: LoginPageProps) {
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -362,8 +364,10 @@ export function LoginPage({ onLogin, isDarkMode, toggleTheme }: LoginPageProps) 
                 <button
                   type="button"
                   onClick={() => {
-                    setIsLogin(!isLogin);
+                    const newMode = !isLogin;
+                    setIsLogin(newMode);
                     setErrors({});
+                    onToggleMode?.(newMode);
                   }}
                   disabled={isLoading}
                   className="text-green-600 dark:text-green-400 hover:underline disabled:opacity-50"

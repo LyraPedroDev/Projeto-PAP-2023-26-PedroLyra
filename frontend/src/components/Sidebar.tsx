@@ -35,7 +35,18 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
 
       {/* Logo */}
       <div style={{ padding: '22px 20px 18px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.sidebarBorder}` }}>
-        <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 10, padding: 8, display: 'flex', boxShadow: isDarkMode ? '0 0 16px rgba(16,185,129,0.4)' : 'none' }}>
+        <div style={{ 
+          background: 'linear-gradient(135deg,#10b981,#059669)', 
+          borderRadius: 10, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          width: 32, 
+          height: 32, 
+          minWidth: 32, 
+          flexShrink: 0, 
+          boxShadow: isDarkMode ? '0 0 16px rgba(16,185,129,0.4)' : 'none' 
+        }}>
           <Leaf size={17} color="white" />
         </div>
         <span style={{ fontWeight: 900, fontSize: 18, color: T.sidebarText, letterSpacing: '-0.03em' }}>EcoChat</span>

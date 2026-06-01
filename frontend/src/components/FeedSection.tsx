@@ -534,7 +534,7 @@ function PostCard({
 }
 
 // --- Painel Direito (Widgets & Rankings) ---
-function RightPanel({ isDarkMode }: { isDarkMode: boolean }) {
+function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: number }) {
   const T = theme(isDarkMode);
   
   const tips = [
@@ -560,7 +560,7 @@ function RightPanel({ isDarkMode }: { isDarkMode: boolean }) {
   };
 
   return (
-    <div style={{ width: 280, flexShrink: 0, position: 'sticky', top: 28 }}>
+    <div style={{ width: width, flexShrink: 0, position: 'sticky', top: 28 }}>
       {/* Widget 1: Missão do Dia */}
       <div style={blockStyle}>
         <p style={{ fontSize: 10, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700, marginBottom: 10 }}>Missão do Dia</p>
@@ -623,6 +623,17 @@ function RightPanel({ isDarkMode }: { isDarkMode: boolean }) {
 // --- Componente Container Principal Feed ---
 export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   const T = theme(isDarkMode);
+  
+  const [windowWidth, setWindowWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
+  const isTablet = windowWidth >= 768 && windowWidth < 1024;
   
   // --- Estados do Feed ---
   const [posts, setPosts] = useState<Post[]>([]);
@@ -919,8 +930,18 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   }, [userId, filtro]);
 
   return (
-    <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', paddingBottom: 40 }}>
-      <div style={{ flex: 1, minWidth: 0, maxWidth: 640 }}>
+    <div style={{ 
+      display: 'flex', 
+      gap: isMobile ? 16 : (isTablet ? 16 : 24), 
+      alignItems: 'flex-start', 
+      paddingBottom: 40,
+      width: '100%',
+      maxWidth: 960,
+      margin: '0 auto',
+      padding: '0 16px',
+      flexDirection: isMobile ? 'column' : 'row'
+    }}>
+      <div style={{ flex: 1, minWidth: 0, width: '100%', maxWidth: isMobile ? 'none' : 640 }}>
         
         {/* Header Superior - Abas Animadas (Estilo Twitter/X) */}
         <div style={{ 
@@ -1104,9 +1125,9 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
       </div>
 
       {/* Widgets / RightPanel (Escondido em Mobile e Responsivo) */}
-      <div className="hidden xl:block">
-        <RightPanel isDarkMode={isDarkMode} />
-      </div>
+      {!isMobile && (
+        <RightPanel isDarkMode={isDarkMode} width={isTablet ? 240 : 280} />
+      )}
 
       {/* Estilos CSS do Shimmer Loading */}
       <style>{`

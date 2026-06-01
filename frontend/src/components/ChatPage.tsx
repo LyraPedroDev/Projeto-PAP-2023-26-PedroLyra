@@ -93,7 +93,7 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPage
       <button
         onClick={() => setIsMobileMenuOpen(o => !o)}
         className="lg:hidden"
-        style={{ position: 'fixed', top: 14, left: 14, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, borderRadius: 10, background: T.bgCard, border: `1px solid ${T.border}`, cursor: 'pointer', color: T.text, boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }}>
+        style={{ position: 'fixed', top: 16, left: 16, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, borderRadius: 10, background: T.bgCard, border: `1px solid ${T.border}`, cursor: 'pointer', color: T.text, boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }}>
         {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
@@ -139,7 +139,16 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPage
       </AnimatePresence>
 
       {/* Main content */}
-      <div style={{ flex: 1, padding: activeSection === 'private' ? '0' : '28px 24px', minHeight: '100vh', overflowX: 'hidden', transition: 'all 0.3s' }}>
+      <div 
+        className={activeSection === 'private' ? '' : 'pt-[76px] lg:pt-[28px] px-6 pb-10'}
+        style={{ 
+          flex: 1, 
+          minHeight: '100vh', 
+          overflowX: 'hidden', 
+          transition: 'all 0.3s',
+          padding: activeSection === 'private' ? '0' : undefined 
+        }}
+      >
         <motion.div
           key={activeSection}
           initial={{ opacity: 0, y: 12 }}
