@@ -4,7 +4,7 @@ import { LeafLogo } from './ui/LeafLogo';
 import { theme } from '../theme';
 
 // Incluir 'private' no tipo Section
-type Section = 'chat' | 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private';
+type Section = 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private';
 
 interface SidebarProps {
   activeSection: Section;
@@ -17,7 +17,6 @@ interface SidebarProps {
 
 const MENU = [
   { id: 'feed' as Section,    icon: Newspaper,        label: 'Feed'      },
-  { id: 'chat' as Section,    icon: MessageCircle,    label: 'EcoBot'    },
   { id: 'private' as Section, icon: MessageSquareDot, label: 'Mensagens' },
   { id: 'ranking' as Section, icon: Trophy,           label: 'Ranking'   },
   { id: 'tasks' as Section,   icon: CheckSquare,      label: 'Missões'   },

@@ -4,12 +4,15 @@ import { ChatPage } from './components/ChatPage';
 import { LandingPage } from './components/LandingPage';
 import { Toaster } from './components/ui/sonner';
 import { socket } from './services/socket';
+import { AIFloatingButton } from './components/AIFloatingButton';
+import { AIModal } from './components/AIModal';
 
 type Page = 'landing' | 'login' | 'app';
 
 const THEME_KEY = 'ecochat_theme';
 
 export default function App() {
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [startAsRegister, setStartAsRegister] = useState<boolean>(() => {
     return window.history.state?.startAsRegister ?? false;
   });
@@ -155,6 +158,10 @@ export default function App() {
         />
       )}
       <Toaster />
+
+      {/* Botão Flutuante e Modal da IA */}
+      <AIFloatingButton onClick={() => setIsAIModalOpen(true)} />
+      <AIModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} isDarkMode={isDarkMode} />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
-import { ChatArea } from './ChatArea';
 import { FeedSection } from './FeedSection';
 import { RankingSection } from './RankingSection';
 import { TasksSection } from './TasksSection';
@@ -19,7 +18,7 @@ interface ChatPageProps {
 }
 
 // Adicionar 'private' ao tipo Section
-type Section = 'chat' | 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private';
+type Section = 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private';
 
 export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPageProps) {
   const [activeSection, setActiveSection] = useState<Section>('feed');
@@ -56,7 +55,6 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPage
   const renderSection = () => {
     const commonProps = { isDarkMode, toggleTheme };
     switch (activeSection) {
-      case 'chat':    return <ChatArea />;
       case 'feed':    return <FeedSection userId={userId} {...commonProps} />;
       case 'ranking': return <RankingSection userId={userId} />;
       case 'tasks':   return <TasksSection userId={userId} />;
