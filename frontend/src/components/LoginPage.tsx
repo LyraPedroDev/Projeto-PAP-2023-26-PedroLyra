@@ -161,12 +161,39 @@ export function LoginPage({ onLogin, initialIsLogin = true, onToggleMode, isDark
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-black">
+      {/* Vídeo de Fundo */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          minWidth: '100%',
+          minHeight: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center',
+          filter: 'blur(8px)',
+          zIndex: 0,
+        }}
+      >
+        <source src="/videos/login-background.mp4" type="video/mp4" />
+        Seu navegador não suporta vídeo HTML5
+      </video>
+
+      {/* Overlay escuro para contraste */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black/40 dark:bg-black/60 z-0"></div>
+
       {/* Ícones flutuantes de fundo */}
       {floatingIcons.map(({ Icon, delay, x, y }, index) => (
         <motion.div
           key={index}
-          className="absolute text-green-200/20 dark:text-green-700/20"
+          className="absolute text-green-200/10 dark:text-green-700/10 z-0"
           style={{ left: x, top: y }}
           initial={{ opacity: 0, scale: 0, rotate: 0 }}
           animate={{
@@ -197,7 +224,7 @@ export function LoginPage({ onLogin, initialIsLogin = true, onToggleMode, isDark
       {/* Botão de tema */}
       <motion.button
         onClick={toggleTheme}
-        className="absolute top-6 right-6 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all"
+        className="absolute top-6 right-6 p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all z-10"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
