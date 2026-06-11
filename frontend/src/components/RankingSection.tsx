@@ -153,7 +153,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
                     {getMedalIcon(user.posicao)}
                   </div>
                   <Avatar className="mx-auto w-16 h-16 text-2xl">
-                    <AvatarFallback>{getAvatar(user.nivel)}</AvatarFallback>
+                    <AvatarFallback>{localStorage.getItem(`user_avatar_${user.id}`) || getAvatar(user.nivel)}</AvatarFallback>
                   </Avatar>
                   <div className="flex items-center justify-center gap-2">
                     <CardTitle className="dark:text-gray-200">{user.nome}</CardTitle>
@@ -215,7 +215,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
                       {getMedalIcon(user.posicao)}
                     </div>
                     <Avatar className="flex-shrink-0">
-                      <AvatarFallback>{getAvatar(user.nivel)}</AvatarFallback>
+                      <AvatarFallback>{localStorage.getItem(`user_avatar_${user.id}`) || getAvatar(user.nivel)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">

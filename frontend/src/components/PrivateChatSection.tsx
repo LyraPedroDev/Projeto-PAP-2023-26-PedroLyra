@@ -369,7 +369,6 @@ export function PrivateChatSection({
                     transition: 'all 0.15s',
                   }}
                 >
-                  {/* Avatar */}
                   <div
                     style={{
                       width: 42,
@@ -383,13 +382,13 @@ export function PrivateChatSection({
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: 14,
+                      fontSize: localStorage.getItem(`user_avatar_${conv.friend.id}`) ? 20 : 14,
                       fontWeight: 800,
                       color: isActive ? '#fff' : T.textSub,
                       flexShrink: 0,
                     }}
                   >
-                    {avatarInitials(conv.friend.nome)}
+                    {localStorage.getItem(`user_avatar_${conv.friend.id}`) || avatarInitials(conv.friend.nome)}
                   </div>
 
                   {/* Info */}
@@ -531,13 +530,13 @@ export function PrivateChatSection({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 13,
+                  fontSize: localStorage.getItem(`user_avatar_${activeFriend.id}`) ? 18 : 13,
                   fontWeight: 800,
                   color: '#fff',
                   flexShrink: 0,
                 }}
               >
-                {avatarInitials(activeFriend.nome)}
+                {localStorage.getItem(`user_avatar_${activeFriend.id}`) || avatarInitials(activeFriend.nome)}
               </div>
 
               <div style={{ flex: 1 }}>

@@ -269,7 +269,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                   className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-gray-800 border-2 border-yellow-300 dark:border-yellow-700 shadow-sm"
                 >
                   <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center text-yellow-700 dark:text-yellow-300 font-bold text-lg">
-                    {req.nome.charAt(0).toUpperCase()}
+                    {localStorage.getItem(`user_avatar_${req.id}`) || req.nome.charAt(0).toUpperCase()}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -365,8 +365,8 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                   key={friend.id}
                   className="flex items-center gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-700 dark:text-green-300 font-bold">
-                    {friend.nome.charAt(0).toUpperCase()}
+                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-700 dark:text-green-300 font-bold text-lg">
+                    {localStorage.getItem(`user_avatar_${friend.id}`) || friend.nome.charAt(0).toUpperCase()}
                   </div>
                   
                   <div className="flex-1 min-w-0">

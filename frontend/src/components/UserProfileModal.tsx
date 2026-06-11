@@ -162,7 +162,7 @@ export function UserProfileModal({ isOpen, onClose, user, currentUserId }: UserP
                   boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)',
                 }}
               >
-                {getAvatar(user.nivel)}
+                {localStorage.getItem(`user_avatar_${user.id}`) || getAvatar(user.nivel)}
               </div>
               <h2 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 4px', letterSpacing: '-0.02em' }}>
                 {user.nome}
