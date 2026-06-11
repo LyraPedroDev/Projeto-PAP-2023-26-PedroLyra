@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { MessageCircle, Trophy, CheckSquare, Users, User, Newspaper, LogOut, Sun, Moon, MessageSquareDot } from 'lucide-react';
 import { LeafLogo } from './ui/LeafLogo';
@@ -29,6 +30,21 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
   const initials = userName
     ? userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
     : 'EC';
+
+  const userId = localStorage.getItem('user_id');
+  const [avatar, setAvatar] = useState(
+    userId ? localStorage.getItem(`user_avatar_${userId}`) || '🌱' : '🌱'
+  );
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      if (userId) {
+        setAvatar(localStorage.getItem(`user_avatar_${userId}`) || '🌱');
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [userId]);
 
   return (
     <div style={{ width: 260, background: T.sidebarBg, borderRight: `1px solid ${T.sidebarBorder}`, display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: '"Inter","Segoe UI",system-ui,sans-serif', transition: 'background 0.3s' }}>
@@ -92,7 +108,9 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
         {/* Mini profile */}
         <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 14, padding: '12px 14px', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#10b981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, color: '#fff', flexShrink: 0 }}>{initials}</div>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg,#10b981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+              {avatar}
+            </div>
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: T.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userName || 'Utilizador'}</p>
               <p style={{ fontSize: 11, color: T.textMuted }}>Guardião Verde 🌿</p>

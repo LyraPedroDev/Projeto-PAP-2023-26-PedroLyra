@@ -34,10 +34,26 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
     friendsCount: 0,
     daysActive: 0,
     streak: 0,
-    avatar: '🌱'
+    avatar: localStorage.getItem(`user_avatar_${userId}`) || '🌱'
   });
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [selectedTempAvatar, setSelectedTempAvatar] = useState(userStats.avatar);
+
+  const EMOJIS = [
+    '🌱', '🌿', '🌲', '🍀', '🍃', '🦁', '🐼', '🦊', '🐨', '🐳',
+    '😎', '🤓', '😊', '🔥', '✨', '🌍', '⚡', '💧', '♻️', '🏆'
+  ];
+
+  const handleSaveAvatar = () => {
+    localStorage.setItem(`user_avatar_${userId}`, selectedTempAvatar);
+    setUserStats(prev => ({ ...prev, avatar: selectedTempAvatar }));
+    setIsAvatarModalOpen(false);
+    toast.success('Imagem de perfil atualizada! 🤩');
+    // Forçar recarga da Sidebar/Header disparando evento global
+    window.dispatchEvent(new Event('storage'));
+  };
 
   const achievements = [
     { id: 1, title: 'Primeira Tarefa', description: 'Complete sua primeira tarefa', icon: '🎯', earned: userStats.tasksCompleted > 0 },
@@ -72,7 +88,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
             friendsCount: data.amigos_count,
             daysActive: data.dias_ativos,
             streak: data.streak ?? 0,
-            avatar: '🌱'
+            avatar: localStorage.getItem(`user_avatar_${userId}`) || '🌱'
           });
         } else {
           toast.error('Erro ao carregar perfil');
@@ -193,9 +209,21 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
           <CardContent className="p-6">
             <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex flex-col items-center lg:items-start gap-4">
-                <Avatar className="w-24 h-24 text-4xl">
-                  <AvatarFallback>{userStats.avatar}</AvatarFallback>
-                </Avatar>
+                {/* Avatar clicável com overlay de edição */}
+                <div 
+                  onClick={() => {
+                    setSelectedTempAvatar(userStats.avatar);
+                    setIsAvatarModalOpen(true);
+                  }}
+                  className="relative group cursor-pointer w-24 h-24 rounded-full overflow-hidden"
+                >
+                  <Avatar className="w-24 h-24 text-4xl">
+                    <AvatarFallback>{userStats.avatar}</AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <span className="text-white text-xs font-semibold">Editar</span>
+                  </div>
+                </div>
                 <div className="text-center lg:text-left">
                   <h2 className="text-green-800 dark:text-green-300">{formData.name}</h2>
                   <Badge className="bg-green-500 mt-2">{userStats.level}</Badge>
@@ -484,6 +512,132 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Modal de Seleção de Avatar */}
+      <AnimatePresence>
+        {isAvatarModalOpen && (
+          <div
+            onClick={() => setIsAvatarModalOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 100,
+              padding: '16px',
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                backgroundColor: isDarkMode ? '#060e08' : '#ffffff',
+                color: isDarkMode ? '#ffffff' : '#0d1f14',
+                borderRadius: '24px',
+                padding: '28px',
+                width: '100%',
+                maxWidth: '400px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(16, 185, 129, 0.1)',
+                textAlign: 'center'
+              }}
+            >
+              <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '8px' }}>Alterar Imagem de Perfil</h3>
+              <p style={{ fontSize: '13px', opacity: 0.6, marginBottom: '20px' }}>Escolha um emoji para representar sua jornada ecológica</p>
+              
+              {/* Preview */}
+              <div
+                style={{
+                  width: '72px',
+                  height: '72px',
+                  borderRadius: '20px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '32px',
+                  margin: '0 auto 24px',
+                  boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)',
+                }}
+              >
+                {selectedTempAvatar}
+              </div>
+
+              {/* Grid of Emojis */}
+              <div 
+                style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(5, 1fr)', 
+                  gap: '10px', 
+                  marginBottom: '24px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  padding: '4px'
+                }}
+              >
+                {EMOJIS.map(emoji => (
+                  <button
+                    key={emoji}
+                    onClick={() => setSelectedTempAvatar(emoji)}
+                    style={{
+                      fontSize: '26px',
+                      padding: '8px',
+                      borderRadius: '12px',
+                      border: selectedTempAvatar === emoji ? '2px solid #10b981' : (isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)'),
+                      background: selectedTempAvatar === emoji ? 'rgba(16,185,129,0.15)' : 'transparent',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => setIsAvatarModalOpen(false)}
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    borderRadius: '10px',
+                    border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
+                    background: 'transparent',
+                    color: 'inherit',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveAvatar}
+                  style={{
+                    flex: 1,
+                    padding: '10px 16px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: '#10b981',
+                    color: '#ffffff',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Confirmar
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
