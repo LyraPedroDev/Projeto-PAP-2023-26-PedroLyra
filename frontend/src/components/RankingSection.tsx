@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
+import { UserProfileModal } from './UserProfileModal';
 
 interface RankingUser {
   id: number;
@@ -14,6 +15,7 @@ interface RankingUser {
   nivel: string;
   tarefas_completas: number;
   posicao: number;
+  isFriend?: boolean;
 }
 
 interface RankingSectionProps {
@@ -24,6 +26,10 @@ export function RankingSection({ userId }: RankingSectionProps) {
   const [users, setUsers] = useState<RankingUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // User profile modal states
+  const [selectedUser, setSelectedUser] = useState<RankingUser | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mapeamento de avatares baseado no nível
   const getAvatar = (nivel: string) => {
@@ -120,8 +126,24 @@ export function RankingSection({ userId }: RankingSectionProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
+              onClick={async () => {
+                try {
+                  const res = await fetch(`/api/friends/${userId}`);
+                  if (res.ok) {
+                    const friendsList = await res.json();
+                    const isFriend = friendsList.some((f: any) => f.id === user.id);
+                    setSelectedUser({ ...user, isFriend });
+                  } else {
+                    setSelectedUser(user);
+                  }
+                } catch {
+                  setSelectedUser(user);
+                }
+                setIsModalOpen(true);
+              }}
+              style={{ cursor: 'pointer' }}
             >
-              <Card className={`text-center ${
+              <Card className={`text-center h-full hover:shadow-md transition-shadow ${
                 index === 0 
                   ? 'border-yellow-400 dark:border-yellow-600 bg-gradient-to-b from-yellow-50 to-white dark:from-yellow-900/20 dark:to-gray-800' 
                   : 'border-green-200 dark:border-gray-700'
@@ -167,6 +189,22 @@ export function RankingSection({ userId }: RankingSectionProps) {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(`/api/friends/${userId}`);
+                        if (res.ok) {
+                          const friendsList = await res.json();
+                          const isFriend = friendsList.some((f: any) => f.id === user.id);
+                          setSelectedUser({ ...user, isFriend });
+                        } else {
+                          setSelectedUser(user);
+                        }
+                      } catch {
+                        setSelectedUser(user);
+                      }
+                      setIsModalOpen(true);
+                    }}
+                    style={{ cursor: 'pointer' }}
                     className={`flex items-center gap-4 p-3 lg:p-4 rounded-lg transition-all ${
                       isCurrentUser 
                         ? 'bg-green-100 dark:bg-green-900/30 border-2 border-green-400 dark:border-green-600' 
@@ -208,6 +246,16 @@ export function RankingSection({ userId }: RankingSectionProps) {
           </CardContent>
         </Card>
       )}
+
+      <UserProfileModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+        currentUserId={userId}
+      />
     </div>
   );
 }

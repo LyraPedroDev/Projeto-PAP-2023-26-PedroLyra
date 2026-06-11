@@ -7,6 +7,7 @@ import {
 import { toast } from 'sonner';
 import { theme } from '../theme';
 import { socket } from '../services/socket';
+import { getImageForCategory } from '../categoryImages';
 
 // --- Interfaces de Tipagem Consistentes ---
 interface Post {
@@ -404,13 +405,66 @@ function PostCard({
       ) : (
         <>
           {/* Mídia/Imagem */}
-          {post.imagem_url && (
+          {post.imagem_url ? (
             <div style={{ overflow: 'hidden', maxHeight: 340, background: '#000' }}>
               <img 
                 src={`${post.imagem_url}`} 
                 alt="Upload Ecológico" 
                 style={{ width: '100%', objectFit: 'cover', display: 'block', opacity: 0.95 }} 
               />
+            </div>
+          ) : (
+            <div style={{ 
+              margin: '12px 20px', 
+              position: 'relative', 
+              height: '160px', 
+              borderRadius: '16px', 
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'flex-end',
+              boxShadow: 'inset 0 -80px 80px -20px rgba(0,0,0,0.6)',
+              background: 'linear-gradient(135deg, #0b2512, #040f07)'
+            }}>
+              <img 
+                src={getImageForCategory(post.categoria).url} 
+                alt={getImageForCategory(post.categoria).alt} 
+                style={{ 
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%', 
+                  height: '100%',
+                  objectFit: 'cover', 
+                  opacity: 0.7 
+                }} 
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              {/* Gradiente por cima para garantir contraste e estilo premium */}
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(to top, rgba(4, 15, 7, 0.85) 0%, rgba(4, 15, 7, 0) 100%)',
+                zIndex: 1
+              }} />
+              
+              {/* Título da Categoria com fonte elegante e tamanho ajustado */}
+              <span style={{ 
+                position: 'relative',
+                zIndex: 2,
+                margin: '16px',
+                color: '#ffffff',
+                fontSize: '18px',
+                fontWeight: 800,
+                fontFamily: '"Outfit", "Inter", sans-serif',
+                letterSpacing: '-0.02em',
+                textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                {getImageForCategory(post.categoria).alt}
+              </span>
             </div>
           )}
 

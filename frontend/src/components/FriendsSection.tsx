@@ -272,9 +272,9 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                     {req.nome.charAt(0).toUpperCase()}
                   </div>
 
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{req.nome}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{req.email}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{req.nome}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate hidden md:block">{req.email}</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -369,9 +369,9 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                     {friend.nome.charAt(0).toUpperCase()}
                   </div>
                   
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{friend.nome}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{friend.email}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{friend.nome}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate hidden md:block">{friend.email}</p>
                   </div>
 
                   {/* 🔥 BOTÕES: CHAT + REMOVER */}

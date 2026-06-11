@@ -34,7 +34,20 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
     <div style={{ width: 260, background: T.sidebarBg, borderRight: `1px solid ${T.sidebarBorder}`, display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: '"Inter","Segoe UI",system-ui,sans-serif', transition: 'background 0.3s' }}>
 
       {/* Logo */}
-      <div style={{ padding: '22px 20px 18px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${T.sidebarBorder}` }}>
+      <div 
+        onClick={() => setActiveSection('feed')}
+        style={{ 
+          padding: '22px 20px 18px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 12, 
+          borderBottom: `1px solid ${T.sidebarBorder}`,
+          cursor: 'pointer',
+          transition: 'opacity 0.2s'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+      >
         <div style={{ 
           background: 'linear-gradient(135deg,#10b981,#059669)', 
           borderRadius: 10, 
