@@ -117,7 +117,7 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            {[{ v: '🔥 5', l: 'streak' }, { v: '⭐ 120', l: 'pts' }].map(s => (
+            {[{ v: '🔥 5', l: 'sequência' }, { v: '⭐ 120', l: 'pts' }].map(s => (
               <div key={s.l} style={{ flex: 1, background: T.accentSub, border: `1px solid ${T.accentBorder}`, borderRadius: 8, padding: '5px 8px', textAlign: 'center' }}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: T.text }}>{s.v}</p>
                 <p style={{ fontSize: 9, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{s.l}</p>

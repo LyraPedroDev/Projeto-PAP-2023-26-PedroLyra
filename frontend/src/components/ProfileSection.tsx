@@ -196,8 +196,8 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-green-800 dark:text-green-300 mb-2">Meu Perfil</h1>
-        <p className="text-gray-600 dark:text-gray-400">Gerencie suas informações e configurações</p>
+        <h1 className="text-green-800 dark:text-green-300 mb-2">Editar Perfil</h1>
+        <p className="text-gray-600 dark:text-gray-400">Gerencie suas informações pessoais e conquistas</p>
       </motion.div>
 
       {/* Profile overview */}
@@ -452,66 +452,6 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
         </Card>
       </motion.div>
 
-      {/* Settings */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-        <Card className="border-green-200 dark:border-gray-700">
-          <CardHeader>
-            <CardTitle className="dark:text-gray-200">Preferências</CardTitle>
-            <CardDescription className="dark:text-gray-400">Personaliza a tua experiência</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                {isDarkMode ? <Moon size={20} className="text-indigo-400" /> : <Sun size={20} className="text-amber-500" />}
-                <div>
-                  <p className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
-                    {isDarkMode ? 'Modo Escuro' : 'Modo Claro'}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Alterna entre tema claro e escuro</p>
-                </div>
-              </div>
-              {toggleTheme && (
-                <button
-                  onClick={toggleTheme}
-                  className={`relative w-12 h-6 rounded-full transition-colors duration-300 focus:outline-none ${
-                    isDarkMode ? 'bg-green-500' : 'bg-gray-300'
-                  }`}
-                >
-                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-300 ${
-                    isDarkMode ? 'translate-x-6' : 'translate-x-0'
-                  }`} />
-                </button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Logout */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Card className="border-red-200 dark:border-red-900/50">
-          <CardContent className="p-6">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-              <div>
-                <h3 className="text-red-600 dark:text-red-400">Sair da Conta</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Desconectar-se do EcoChat</p>
-              </div>
-              <Button
-                onClick={onLogout}
-                variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/20"
-              >
-                <LogOut size={20} className="mr-2" />
-                Sair
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
 
       {/* Modal de Seleção de Avatar */}
       <AnimatePresence>

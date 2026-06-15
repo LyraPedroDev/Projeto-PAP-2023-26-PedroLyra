@@ -51,7 +51,7 @@ function Counter({ n, label }: { n: number; label: string }) {
 
 const FEATS = [
   { icon: <Camera size={22} />, title: 'Feed Ecológico', color: '#10b981', desc: 'Publica ações reais, recebe likes e inspira a tua comunidade a agir pelo planeta.', bullets: ['Posts com foto e descrição', 'Likes e comentários em tempo real', 'Filtros por categoria ecológica'] },
-  { icon: <MessageCircle size={22} />, title: 'EcoBot — IA', color: '#06b6d4', desc: 'Assistente inteligente especializado em sustentabilidade, disponível 24/7.', bullets: ['Respostas instantâneas', 'Dados sobre clima, água e energia', 'Dicas acionáveis personalizadas'] },
+  { icon: <MessageCircle size={22} />, title: 'EcoBot IA', color: '#06b6d4', desc: 'Assistente inteligente especializado em sustentabilidade, disponível 24/7.', bullets: ['Respostas instantâneas', 'Dados sobre clima, água e energia', 'Dicas acionáveis personalizadas'] },
   { icon: <Trophy size={22} />, title: 'Missões & Ranking', color: '#f59e0b', desc: 'Gamificação real. Completa desafios, acumula pontos e sobe no ranking global.', bullets: ['Missões diárias e semanais', 'Ranking entre amigos', 'Sistema de níveis e conquistas'] },
 ];
 
@@ -108,7 +108,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} style={{ marginBottom: 32 }}>
             <span style={{ background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399', fontSize: 11, fontWeight: 700, padding: '7px 18px', borderRadius: 100, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-              🌍 PAP 2023–2026 · Pedro Lyra
+              🌍 PAP 2023–2026
             </span>
           </motion.div>
 
@@ -127,7 +127,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
             style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 72 }}>
             <motion.button onClick={onSignup} whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(16,185,129,0.6)' }} whileTap={{ scale: 0.97 }}
               style={{ background: 'linear-gradient(135deg,#10b981,#059669)', boxShadow: '0 0 30px rgba(16,185,129,0.42)', borderRadius: 14, padding: '16px 36px', fontSize: 16, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Zap size={18} /> Criar Conta — É Grátis
+              <Zap size={18} /> Criar Conta (Grátis)
             </motion.button>
             <motion.button onClick={onLogin} whileHover={{ scale: 1.03, background: 'rgba(255,255,255,0.1)' }} whileTap={{ scale: 0.97 }}
               style={{ border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)', borderRadius: 14, padding: '16px 36px', fontSize: 16, fontWeight: 600, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -289,7 +289,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
             <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 8, padding: '5px 6px', display: 'flex' }}><LeafLogo size={13} color="white" /></div>
             <span style={{ fontWeight: 800, fontSize: 15, color: 'rgba(255,255,255,0.8)' }}>EcoChat</span>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.03em' }}>Projeto Académico PAP 2023–2026 · Pedro Lyra</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.03em' }}>Projeto Académico PAP 2023–2026</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>Sistema operacional</span>

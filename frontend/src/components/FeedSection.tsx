@@ -555,7 +555,7 @@ function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: 
     { name: 'João Costa', pts: 860, emoji: '🥈' },
     { name: 'Maria Lopes', pts: 720, emoji: '🥉' }, 
     { name: 'Rui Santos', pts: 610, emoji: '4️⃣' },
-    { name: 'Pedro Lyra', pts: 540, emoji: '5️⃣' },
+    { name: 'João Santos', pts: 540, emoji: '5️⃣' },
   ];
 
   const blockStyle = { 
@@ -590,7 +590,7 @@ function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: 
         <div style={{ flex: 1, textAlign: 'center' }}>
           <Flame size={22} style={{ color: '#f97316', margin: '0 auto 6px' }} />
           <p style={{ fontSize: 22, fontWeight: 900, color: T.text }}>5</p>
-          <p style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Streak</p>
+          <p style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Sequência</p>
         </div>
         <div style={{ width: 1, background: T.border }} />
         <div style={{ flex: 1, textAlign: 'center' }}>
