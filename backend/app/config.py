@@ -4,8 +4,10 @@ basedir = os.path.abspath(os.path.dirname(os.path.dirname(os.path.abspath(__file
 db_path = os.path.abspath(os.path.join(basedir, 'ecochat.db'))
 
 class Config:
-    SECRET_KEY = 'ecochat-pap-2026-pedro-lyra-secret-key'
+    SECRET_KEY = os.environ.get('ECOCHAT_SECRET_KEY', 'ecochat-dev-change-this-key')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max
+    ACCESS_TOKEN_MAX_AGE = 15 * 60
+    REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60
 
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{db_path}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -17,3 +19,12 @@ class Config:
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = False       # True apenas em HTTPS/produção
     SESSION_COOKIE_HTTPONLY = True
+    TOKEN_COOKIE_SECURE = os.environ.get('ECOCHAT_HTTPS', '0') == '1'
+    ALLOWED_ORIGINS = [
+        origin.strip()
+        for origin in os.environ.get(
+            'ECOCHAT_ALLOWED_ORIGINS',
+            'http://localhost:3000,http://localhost:5000'
+        ).split(',')
+        if origin.strip()
+    ]

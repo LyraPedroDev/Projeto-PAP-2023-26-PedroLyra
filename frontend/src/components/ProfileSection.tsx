@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Mail, Lock, LogOut, Save, Flame, Sun, Moon } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, LogOut, Save, Flame, Sun, Moon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Button } from './ui/button';
@@ -18,6 +18,7 @@ interface ProfileSectionProps {
 }
 
 export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleTheme }: ProfileSectionProps) {
+  const [showPasswords, setShowPasswords] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -281,24 +282,29 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                   <Progress value={progressToNextLevel} />
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-900/20">
+                <motion.div 
+                  className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+                >
+                  <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.05 }} className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-900/20 shadow-sm cursor-default">
                     <div className="text-green-600 dark:text-green-400 font-bold">{userStats.points}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">Pontos</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                  </motion.div>
+                  <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.05 }} className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 shadow-sm cursor-default">
                     <div className="text-blue-600 dark:text-blue-400 font-bold">{userStats.tasksCompleted}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">Tarefas</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                  </motion.div>
+                  <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.05 }} className="text-center p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 shadow-sm cursor-default">
                     <div className="text-purple-600 dark:text-purple-400 font-bold">{userStats.friendsCount}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">Amigos</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                  </motion.div>
+                  <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }} whileHover={{ scale: 1.05 }} className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 shadow-sm cursor-default">
                     <div className="text-orange-600 dark:text-orange-400 font-bold">{userStats.daysActive}</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">Dias ativos</div>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
               </div>
             </div>
           </CardContent>
@@ -319,22 +325,29 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+              initial="hidden"
+              animate="visible"
+              variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+            >
               {achievements.map((achievement) => (
-                <div
+                <motion.div
+                  variants={{ hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1 } }}
+                  whileHover={achievement.earned ? { scale: 1.05, y: -4, boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.1)' } : {}}
                   key={achievement.id}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     achievement.earned
-                      ? 'border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
-                      : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 opacity-50'
+                      ? 'border-green-400 dark:border-green-600 bg-green-50 dark:bg-green-900/20 cursor-pointer shadow-sm'
+                      : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 opacity-50 cursor-not-allowed'
                   }`}
                 >
                   <div className="text-2xl mb-2">{achievement.icon}</div>
-                  <div className="dark:text-gray-200">{achievement.title}</div>
+                  <div className="dark:text-gray-200 font-semibold">{achievement.title}</div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{achievement.description}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </CardContent>
         </Card>
       </motion.div>
@@ -407,10 +420,11 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                   <Input
                     id="currentPassword"
-                    type="password"
+                    type={showPasswords ? 'text' : 'password'}
                     value={formData.currentPassword}
                     onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
                     className="pl-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    style={{ paddingRight: 44 }}
                   />
                 </div>
               </div>
@@ -421,10 +435,11 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                   <Input
                     id="newPassword"
-                    type="password"
+                    type={showPasswords ? 'text' : 'password'}
                     value={formData.newPassword}
                     onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                     className="pl-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    style={{ paddingRight: 44 }}
                   />
                 </div>
               </div>
@@ -435,14 +450,24 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                   <Input
                     id="confirmPassword"
-                    type="password"
+                    type={showPasswords ? 'text' : 'password'}
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     className="pl-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    style={{ paddingRight: 44 }}
                   />
                 </div>
               </div>
               
+              <button
+                type="button"
+                onClick={() => setShowPasswords(value => !value)}
+                className="inline-flex items-center gap-2 text-sm text-green-600 dark:text-green-400"
+              >
+                {showPasswords ? <EyeOff size={17} /> : <Eye size={17} />}
+                {showPasswords ? 'Ocultar palavras-passe' : 'Mostrar palavras-passe'}
+              </button>
+
               <Button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white">
                 <Lock size={20} className="mr-2" />
                 Alterar Senha

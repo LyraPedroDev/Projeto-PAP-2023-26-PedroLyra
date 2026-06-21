@@ -42,10 +42,13 @@ function Counter({ n, label }: { n: number; label: string }) {
     return () => clearInterval(t);
   }, [inView, n]);
   return (
-    <div ref={ref} style={{ textAlign: 'center', padding: '24px 16px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 16 }}>
+    <motion.div ref={ref}
+      whileHover={{ scale: 1.05, y: -5, boxShadow: '0 20px 40px rgba(16,185,129,0.15)', borderColor: 'rgba(16,185,129,0.4)' }}
+      transition={{ type: "spring", stiffness: 300 }}
+      style={{ textAlign: 'center', padding: '24px 16px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 16, cursor: 'default' }}>
       <p style={{ fontSize: 48, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>{c.toLocaleString('pt-PT')}+</p>
       <p style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.5)', marginTop: 8, fontWeight: 600 }}>{label}</p>
-    </div>
+    </motion.div>
   );
 }
 
@@ -54,6 +57,47 @@ const FEATS = [
   { icon: <MessageCircle size={22} />, title: 'EcoBot IA', color: '#06b6d4', desc: 'Assistente inteligente especializado em sustentabilidade, disponível 24/7.', bullets: ['Respostas instantâneas', 'Dados sobre clima, água e energia', 'Dicas acionáveis personalizadas'] },
   { icon: <Trophy size={22} />, title: 'Missões & Ranking', color: '#f59e0b', desc: 'Gamificação real. Completa desafios, acumula pontos e sobe no ranking global.', bullets: ['Missões diárias e semanais', 'Ranking entre amigos', 'Sistema de níveis e conquistas'] },
 ];
+
+function FloatingOrbs() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 1 }}>
+      {[...Array(15)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{
+            opacity: Math.random() * 0.4 + 0.1,
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            scale: Math.random() * 0.5 + 0.5
+          }}
+          animate={{
+            y: [0, Math.random() * -150 - 50],
+            x: [0, Math.random() * 100 - 50],
+            opacity: [null, Math.random() * 0.6 + 0.2, 0.1]
+          }}
+          transition={{
+            duration: Math.random() * 10 + 10,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
+          }}
+          style={{
+            position: 'absolute',
+            width: Math.random() * 5 + 3,
+            height: Math.random() * 5 + 3,
+            borderRadius: '50%',
+            background: '#34d399',
+            boxShadow: '0 0 15px 4px rgba(16,185,129,0.4)'
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: LandingPageProps) {
   const [stats, setStats] = useState({ usuarios: 5, publicacoes: 12, likes: 48, tarefas: 30 });
@@ -73,6 +117,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
 
   return (
     <div style={{ fontFamily: '"Inter","Segoe UI",system-ui,sans-serif', background: '#020b05', color: '#fff' }}>
+      <FloatingOrbs />
 
       {/* NAV */}
       <motion.nav initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
@@ -108,7 +153,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
 
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} style={{ marginBottom: 32 }}>
             <span style={{ background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399', fontSize: 11, fontWeight: 700, padding: '7px 18px', borderRadius: 100, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-              🌍 PAP 2023–2026
+              🌍 EcoChat
             </span>
           </motion.div>
 
@@ -137,7 +182,8 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
 
           {/* Product Mockup */}
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85, duration: 0.9 }}
-            style={{ width: '100%', maxWidth: 720, background: 'rgba(10,26,16,0.9)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(16,185,129,0.1)' }}>
+            whileHover={{ y: -12, scale: 1.02, boxShadow: '0 60px 140px rgba(0,0,0,0.8), 0 0 0 1px rgba(16,185,129,0.4), 0 0 60px rgba(16,185,129,0.2)' }}
+            style={{ width: '100%', maxWidth: 720, background: 'rgba(10,26,16,0.9)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 20, overflow: 'hidden', boxShadow: '0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(16,185,129,0.1)', cursor: 'pointer' }}>
             {/* Browser chrome */}
             <div style={{ background: 'rgba(5,15,8,0.95)', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -244,14 +290,17 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
       {/* TRUST */}
       <section style={{ background: '#020d06', borderTop: '1px solid rgba(255,255,255,0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '48px 24px' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 40 }}>
-          {[{ icon: <Shield size={18} />, label: '100% Gratuito', sub: 'Sem custos escondidos' }, { icon: <Star size={18} />, label: 'Open Source', sub: 'Projeto académico' }, { icon: <Users size={18} />, label: 'Comunidade', sub: 'Cresce a cada dia' }].map(item => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ color: '#10b981' }}>{item.icon}</div>
+          {[{ icon: <Shield size={18} />, label: '100% Gratuito', sub: 'Sem custos escondidos' }, { icon: <Star size={18} />, label: 'Open Source', sub: 'Projeto académico' }, { icon: <Users size={18} />, label: 'Comunidade', sub: 'Cresce a cada dia' }].map((item, i) => (
+            <motion.div key={item.label} 
+              initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              whileHover={{ scale: 1.05, y: -4 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'default' }}>
+              <motion.div whileHover={{ rotate: 15 }} style={{ color: '#10b981' }}>{item.icon}</motion.div>
               <div>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{item.label}</p>
                 <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{item.sub}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </section>
@@ -273,10 +322,12 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
                 style={{ background: 'linear-gradient(135deg,#10b981,#059669)', boxShadow: '0 0 35px rgba(16,185,129,0.4)', borderRadius: 14, padding: '18px 44px', fontSize: 17, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Zap size={20} /> Criar Conta Grátis
               </motion.button>
-              <button onClick={onLogin}
-                style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '18px 44px', fontSize: 17, fontWeight: 600, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <motion.button onClick={onLogin}
+                whileHover={{ scale: 1.03, background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.3)', color: '#fff' }}
+                whileTap={{ scale: 0.97 }}
+                style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '18px 44px', fontSize: 17, fontWeight: 600, color: 'rgba(255,255,255,0.75)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'color 0.2s ease, border-color 0.2s ease' }}>
                 Já tenho conta <ArrowRight size={17} />
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         </div>
@@ -289,7 +340,7 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
             <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 8, padding: '5px 6px', display: 'flex' }}><LeafLogo size={13} color="white" /></div>
             <span style={{ fontWeight: 800, fontSize: 15, color: 'rgba(255,255,255,0.8)' }}>EcoChat</span>
           </div>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.03em' }}>Projeto Académico PAP 2023–2026</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.03em' }}>EcoChat &copy; Todos os direitos reservados</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)' }}>Sistema operacional</span>

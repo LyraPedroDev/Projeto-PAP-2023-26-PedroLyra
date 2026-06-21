@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { MessageCircle, Trophy, CheckSquare, Users, User, Newspaper, LogOut, Sun, Moon, MessageSquareDot } from 'lucide-react';
-import { LeafLogo } from './ui/LeafLogo';
+import { ShieldCheck, Trophy, CheckSquare, Users, User, Newspaper, LogOut, Sun, Moon, MessageSquareDot } from 'lucide-react';
+import { BrandLogo } from './ui/BrandLogo';
 import { theme } from '../theme';
 
 // Incluir 'private' no tipo Section
-type Section = 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private';
+type Section = 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private' | 'admin';
 
 interface SidebarProps {
   activeSection: Section;
@@ -14,6 +14,7 @@ interface SidebarProps {
   userName?: string;
   isDarkMode: boolean;
   toggleTheme: () => void;
+  isAdmin?: boolean;
 }
 
 const MENU = [
@@ -25,7 +26,20 @@ const MENU = [
   { id: 'profile' as Section, icon: User,             label: 'Perfil'    },
 ];
 
-export function Sidebar({ activeSection, setActiveSection, onLogout, userName, isDarkMode, toggleTheme }: SidebarProps) {
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -15 },
+  show: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
+
+export function Sidebar({ activeSection, setActiveSection, onLogout, userName, isDarkMode, toggleTheme, isAdmin = false }: SidebarProps) {
   const T = theme(isDarkMode);
   const initials = userName
     ? userName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
@@ -50,7 +64,10 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
     <div style={{ width: 260, background: T.sidebarBg, borderRight: `1px solid ${T.sidebarBorder}`, display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: '"Inter","Segoe UI",system-ui,sans-serif', transition: 'background 0.3s' }}>
 
       {/* Logo */}
-      <div 
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, type: 'spring', bounce: 0.5 }}
         onClick={() => setActiveSection('feed')}
         style={{ 
           padding: '22px 20px 18px', 
@@ -61,11 +78,11 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
           cursor: 'pointer',
           transition: 'opacity 0.2s'
         }}
-        onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-        onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
       >
         <div style={{ 
-          background: 'linear-gradient(135deg,#10b981,#059669)', 
+          background: isDarkMode ? 'rgba(255,255,255,0.08)' : '#ffffff', 
           borderRadius: 10, 
           display: 'flex', 
           alignItems: 'center', 
@@ -74,23 +91,29 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
           height: 32, 
           minWidth: 32, 
           flexShrink: 0, 
-          boxShadow: isDarkMode ? '0 0 16px rgba(16,185,129,0.4)' : 'none' 
+          boxShadow: isDarkMode ? '0 0 16px rgba(16,185,129,0.25)' : '0 4px 12px rgba(5,150,105,0.12)' 
         }}>
-          <LeafLogo size={17} color="white" />
+          <BrandLogo size={29} />
         </div>
         <span style={{ fontWeight: 900, fontSize: 18, color: T.sidebarText, letterSpacing: '-0.03em' }}>EcoChat</span>
-      </div>
+      </motion.div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <p style={{ fontSize: 10, color: T.sidebarTextMuted, textTransform: 'uppercase', letterSpacing: '0.2em', padding: '6px 12px 4px', fontWeight: 600 }}>Navegação</p>
-        {MENU.map(item => {
+      <motion.nav 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        style={{ flex: 1, padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}
+      >
+        <motion.p variants={itemVariants} style={{ fontSize: 10, color: T.sidebarTextMuted, textTransform: 'uppercase', letterSpacing: '0.2em', padding: '6px 12px 4px', fontWeight: 600 }}>Navegação</motion.p>
+        {[...MENU, ...(isAdmin ? [{ id: 'admin' as Section, icon: ShieldCheck, label: 'Admin' }] : [])].map(item => {
           const Icon = item.icon;
           const active = activeSection === item.id;
           return (
             <motion.button key={item.id} onClick={() => setActiveSection(item.id)}
-              whileHover={{ x: active ? 0 : 3 }} whileTap={{ scale: 0.98 }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderRadius: 12, cursor: 'pointer', border: `1px solid ${active ? T.sidebarItemActiveBorder : 'transparent'}`, background: active ? T.sidebarItemActive : 'transparent', transition: 'all 0.2s' }}>
+              variants={itemVariants}
+              whileHover={{ x: active ? 0 : 4, scale: 1.02 }} whileTap={{ scale: 0.95 }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderRadius: 12, cursor: 'pointer', border: `1px solid ${active ? T.sidebarItemActiveBorder : 'transparent'}`, background: active ? T.sidebarItemActive : 'transparent', transition: 'background 0.2s, border 0.2s' }}>
               <div style={{ color: active ? T.accent : T.sidebarTextMuted, display: 'flex', transition: 'color 0.2s' }}>
                 <Icon size={19} />
               </div>
@@ -101,10 +124,15 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
             </motion.button>
           );
         })}
-      </nav>
+      </motion.nav>
 
       {/* Footer */}
-      <div style={{ padding: '12px 12px 20px', borderTop: `1px solid ${T.sidebarBorder}` }}>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        style={{ padding: '12px 12px 20px', borderTop: `1px solid ${T.sidebarBorder}` }}
+      >
         {/* Mini profile */}
         <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 14, padding: '12px 14px', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
@@ -141,7 +169,7 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
             <span style={{ fontSize: 13, fontWeight: 500 }}>Terminar Sessão</span>
           </motion.button>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }

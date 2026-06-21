@@ -3,24 +3,28 @@ from ..services.friends_service import (
     listar_amigos, listar_pendentes, adicionar_amigo,
     aceitar_amizade, recusar_amizade, remover_amigo
 )
+from ..auth_tokens import current_user, login_required
 
 friends_bp = Blueprint('friends', __name__)
 
 
 @friends_bp.route("/api/friends/<int:user_id>", methods=["GET"])
+@login_required
 def get_amigos(user_id):
-    return jsonify(listar_amigos(user_id))
+    return jsonify(listar_amigos(current_user().id))
 
 
 @friends_bp.route("/api/friends/pending/<int:user_id>", methods=["GET"])
+@login_required
 def get_pendentes(user_id):
-    return jsonify(listar_pendentes(user_id))
+    return jsonify(listar_pendentes(current_user().id))
 
 
 @friends_bp.route("/api/friends/add", methods=["POST"])
+@login_required
 def add_friend():
     data = request.get_json()
-    user_id = data.get("user_id")
+    user_id = current_user().id
     alvo = data.get("alvo")
 
     if not user_id or not alvo:
@@ -36,9 +40,10 @@ def add_friend():
 
 
 @friends_bp.route("/api/friends/accept", methods=["POST"])
+@login_required
 def accept_friend():
     data = request.get_json()
-    ok, erro = aceitar_amizade(data.get("user_id"), data.get("friend_id"))
+    ok, erro = aceitar_amizade(current_user().id, data.get("friend_id"))
 
     if not ok:
         return jsonify({"erro": erro}), 404
@@ -47,9 +52,10 @@ def accept_friend():
 
 
 @friends_bp.route("/api/friends/decline", methods=["POST"])
+@login_required
 def decline_friend():
     data = request.get_json()
-    ok, erro = recusar_amizade(data.get("user_id"), data.get("friend_id"))
+    ok, erro = recusar_amizade(current_user().id, data.get("friend_id"))
 
     if not ok:
         return jsonify({"erro": erro}), 404
@@ -58,9 +64,10 @@ def decline_friend():
 
 
 @friends_bp.route("/api/friends/remove", methods=["POST"])
+@login_required
 def remove_friend():
     data = request.get_json()
-    ok, erro = remover_amigo(data.get("user_id"), data.get("friend_id"))
+    ok, erro = remover_amigo(current_user().id, data.get("friend_id"))
 
     if not ok:
         return jsonify({"erro": erro}), 404

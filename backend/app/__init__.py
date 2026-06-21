@@ -14,6 +14,9 @@ def create_app(config_class=Config) -> Flask:
                 static_url_path='/')
     app.config.from_object(config_class)
 
+    from .auth_tokens import load_user_from_token
+    app.before_request(load_user_from_token)
+
     # Garantir que a pasta de uploads existe
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -21,10 +24,10 @@ def create_app(config_class=Config) -> Flask:
     db.init_app(app)
     cors.init_app(app,
                   supports_credentials=True,
-                  resources={r"/api/*": {"origins": "*"}})
+                  resources={r"/api/*": {"origins": app.config['ALLOWED_ORIGINS']}})
 
     socketio.init_app(app,
-                      cors_allowed_origins="*",
+                      cors_allowed_origins=app.config['ALLOWED_ORIGINS'],
                       async_mode=None,
                       manage_session=False,
                       logger=True,
@@ -41,6 +44,7 @@ def create_app(config_class=Config) -> Flask:
     from .routes.chat import chat_bp
     from .routes.stats import stats_bp
     from .routes.private_chat import private_chat_bp
+    from .routes.admin import admin_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(feed_bp)
@@ -52,6 +56,7 @@ def create_app(config_class=Config) -> Flask:
     app.register_blueprint(chat_bp)
     app.register_blueprint(stats_bp)
     app.register_blueprint(private_chat_bp)
+    app.register_blueprint(admin_bp)
 
     # ── Socket.IO events ──────────────────────────────────────────
     # Importar aqui para registar os handlers (efeito colateral intencional)

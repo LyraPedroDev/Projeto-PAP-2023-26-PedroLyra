@@ -1,21 +1,24 @@
 from flask import Blueprint, request, jsonify
 from ..services.profile_service import get_profile, update_profile, change_password
+from ..auth_tokens import current_user, login_required
 
 profile_bp = Blueprint('profile', __name__)
 
 
 @profile_bp.route('/api/profile/<int:user_id>', methods=['GET'])
+@login_required
 def get_profile_route(user_id):
-    profile, erro = get_profile(user_id)
+    profile, erro = get_profile(current_user().id)
     if erro:
         return jsonify({"erro": erro}), 404
     return jsonify(profile)
 
 
 @profile_bp.route('/api/profile/update', methods=['POST'])
+@login_required
 def update_profile_route():
     data = request.get_json()
-    user_id = data.get('user_id')
+    user_id = current_user().id
 
     if not user_id:
         return jsonify({"erro": "ID do usuário é obrigatório"}), 400
@@ -34,9 +37,10 @@ def update_profile_route():
 
 
 @profile_bp.route('/api/profile/change-password', methods=['POST'])
+@login_required
 def change_password_route():
     data = request.get_json()
-    user_id = data.get('user_id')
+    user_id = current_user().id
     senha_atual = data.get('senha_atual')
     senha_nova = data.get('senha_nova')
 

@@ -1,3 +1,5 @@
+import os
+
 from app import create_app
 from app.extensions import socketio
 
@@ -15,5 +17,5 @@ if __name__ == '__main__':
     print("\n📸 Sistema EcoReal ativado!")
     print("💬 Chat privado em tempo real ativado (Socket.IO)!")
     # host='localhost' para consistência com o frontend
-    socketio.run(app, debug=True, host='localhost', port=5000,
+    socketio.run(app, debug=os.environ.get('FLASK_DEBUG') == '1', host='localhost', port=5000,
                  allow_unsafe_werkzeug=True)

@@ -6,6 +6,7 @@ import { TasksSection } from './TasksSection';
 import { FriendsSection } from './FriendsSection';
 import { ProfileSection } from './ProfileSection';
 import { PrivateChatSection } from './PrivateChatSection';
+import { AdminSection } from './AdminSection';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { theme } from '../theme';
@@ -15,12 +16,13 @@ interface ChatPageProps {
   isDarkMode: boolean;
   toggleTheme: () => void;
   userId: number;
+  isAdmin: boolean;
 }
 
 // Adicionar 'private' ao tipo Section
-type Section = 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private';
+type Section = 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private' | 'admin';
 
-export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPageProps) {
+export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId, isAdmin }: ChatPageProps) {
   const [activeSection, setActiveSection] = useState<Section>('feed');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userName, setUserName] = useState('');
@@ -31,6 +33,11 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPage
   useEffect(() => {
     const name = localStorage.getItem('user_name') || localStorage.getItem('user_email') || '';
     setUserName(name);
+    
+    // Listener para o Speed Dial Menu
+    const handleOpenMenu = () => setIsMobileMenuOpen(true);
+    window.addEventListener('open-mobile-menu', handleOpenMenu);
+    return () => window.removeEventListener('open-mobile-menu', handleOpenMenu);
   }, []);
 
   // Abrir chat privado a partir do botão na tela de Amigos
@@ -78,22 +85,18 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPage
           isDarkMode={isDarkMode}
           initialFriendId={privateChatFriendId}
           initialFriendName={privateChatFriendName}
+          onGoToFriends={() => handleSetSection('friends')}
         />
       );
+      case 'admin': return isAdmin
+        ? <AdminSection isDarkMode={isDarkMode} currentUserId={userId} />
+        : <FeedSection userId={userId} {...commonProps} />;
       default: return <FeedSection userId={userId} {...commonProps} />;
     }
   };
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: T.bg, transition: 'background 0.3s', fontFamily: '"Inter","Segoe UI",system-ui,sans-serif' }}>
-
-      {/* Mobile hamburger */}
-      <button
-        onClick={() => setIsMobileMenuOpen(o => !o)}
-        className="lg:hidden"
-        style={{ position: 'fixed', top: 16, left: 16, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, borderRadius: 10, background: T.bgCard, border: `1px solid ${T.border}`, cursor: 'pointer', color: T.text, boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }}>
-        {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
 
       {/* Desktop sidebar — fixed */}
       <div className="hidden lg:block" style={{ flexShrink: 0, width: 260 }}>
@@ -105,6 +108,7 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPage
             userName={userName}
             isDarkMode={isDarkMode}
             toggleTheme={toggleTheme}
+            isAdmin={isAdmin}
           />
         </div>
       </div>
@@ -130,6 +134,7 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPage
                 userName={userName}
                 isDarkMode={isDarkMode}
                 toggleTheme={toggleTheme}
+                isAdmin={isAdmin}
               />
             </motion.div>
           </>
@@ -138,7 +143,7 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId }: ChatPage
 
       {/* Main content */}
       <div 
-        className={activeSection === 'private' ? '' : 'pt-[76px] lg:pt-[28px] px-6 pb-10'}
+        className={activeSection === 'private' ? '' : 'pt-[28px] px-6 pb-10'}
         style={{ 
           flex: 1, 
           minHeight: '100vh', 

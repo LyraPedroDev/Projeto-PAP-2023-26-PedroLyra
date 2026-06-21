@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, Bot, User, X } from 'lucide-react';
+import ecobotAvatar from '../assets/ecobot_avatar.png';
 
 
 interface Message {
@@ -54,6 +55,9 @@ const messageVariants = {
 };
 
 export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
+  const userId = localStorage.getItem('user_id');
+  const userAvatar = userId ? (localStorage.getItem(`user_avatar_${userId}`) || '🌱') : '🌱';
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -322,14 +326,14 @@ export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
             <div style={headerStyle}>
               <div className="flex items-center gap-3">
                 <div 
-                  className="w-9 h-9 flex items-center justify-center rounded-full border"
+                  className="w-10 h-10 flex items-center justify-center rounded-full border overflow-hidden"
                   style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    color: '#FFFFFF'
+                    backgroundColor: '#fff',
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                   }}
                 >
-                  <Bot className="text-white w-5 h-5 animate-pulse" />
+                  <img src={ecobotAvatar} alt="EcoBot" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h3 style={headerTextStyle}>EcoBot Assistant</h3>
@@ -363,15 +367,19 @@ export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
                     className={`flex gap-2.5 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                   >
                     <div 
-                      className="w-8 h-8 rounded-full flex-shrink-0 border flex items-center justify-center text-white"
+                      className="w-8 h-8 rounded-full flex-shrink-0 border flex items-center justify-center overflow-hidden text-white"
                       style={{
                         background: message.sender === 'bot'
-                          ? 'linear-gradient(135deg, #10B981, #059669)'
+                          ? '#fff'
                           : 'linear-gradient(135deg, #059669, #0F766E)',
                         borderColor: message.sender === 'bot' ? '#34D399' : '#10B981'
                       }}
                     >
-                      {message.sender === 'bot' ? <Bot size={14} /> : <User size={14} />}
+                      {message.sender === 'bot' ? (
+                        <img src={ecobotAvatar} alt="EcoBot" className="w-full h-full object-cover" />
+                      ) : (
+                        <span style={{ fontSize: '14px' }}>{userAvatar}</span>
+                      )}
                     </div>
 
                     <div 
@@ -413,13 +421,13 @@ export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
                     className="flex gap-2.5 items-center"
                   >
                     <div 
-                      className="w-8 h-8 rounded-full flex-shrink-0 border flex items-center justify-center text-white"
+                      className="w-8 h-8 rounded-full flex-shrink-0 border flex items-center justify-center overflow-hidden"
                       style={{
-                        background: 'linear-gradient(135deg, #10B981, #059669)',
+                        background: '#fff',
                         borderColor: '#34D399'
                       }}
                     >
-                      <Bot size={14} className="text-white" />
+                      <img src={ecobotAvatar} alt="EcoBot" className="w-full h-full object-cover" />
                     </div>
                     <div 
                       className={`px-4 py-3 rounded-[12px] rounded-tl-none text-xs border ${

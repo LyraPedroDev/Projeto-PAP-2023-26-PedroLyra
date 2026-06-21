@@ -564,9 +564,17 @@ function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: 
   };
 
   return (
-    <div style={{ width: width, flexShrink: 0, position: 'sticky', top: 28 }}>
+    <motion.div 
+      initial="hidden" 
+      animate="visible" 
+      variants={{
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+      }}
+      style={{ width: width, flexShrink: 0, position: 'sticky', top: 28 }}
+    >
       {/* Widget 1: Missão do Dia */}
-      <div style={blockStyle}>
+      <motion.div variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }} style={blockStyle}>
         <p style={{ fontSize: 10, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700, marginBottom: 10 }}>Missão do Dia</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ 
@@ -583,10 +591,10 @@ function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: 
           <div style={{ height: '100%', width: '33%', background: 'linear-gradient(90deg,#10b981,#34d399)', borderRadius: 10 }} />
         </div>
         <p style={{ fontSize: 10, color: T.textMuted, marginTop: 5 }}>1 de 3 completo</p>
-      </div>
+      </motion.div>
 
       {/* Widget 2: Streak e Pontos */}
-      <div style={{ ...blockStyle, display: 'flex', gap: 10 }}>
+      <motion.div variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }} style={{ ...blockStyle, display: 'flex', gap: 10 }}>
         <div style={{ flex: 1, textAlign: 'center' }}>
           <Flame size={22} style={{ color: '#f97316', margin: '0 auto 6px' }} />
           <p style={{ fontSize: 22, fontWeight: 900, color: T.text }}>5</p>
@@ -598,29 +606,29 @@ function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: 
           <p style={{ fontSize: 22, fontWeight: 900, color: T.text }}>145</p>
           <p style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pontos</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Widget 3: Top Líderes */}
-      <div style={blockStyle}>
+      <motion.div variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }} style={blockStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <Trophy size={15} style={{ color: '#f59e0b' }} />
           <p style={{ fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700 }}>Top Comunidade</p>
         </div>
         {top5.map((u, i) => (
-          <div key={u.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < 4 ? `1px solid ${T.border}` : 'none' }}>
+          <motion.div whileHover={{ scale: 1.02 }} key={u.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < 4 ? `1px solid ${T.border}` : 'none', cursor: 'pointer' }}>
             <span style={{ fontSize: 14 }}>{u.emoji}</span>
             <p style={{ flex: 1, fontSize: 13, fontWeight: 600, color: i === 0 ? '#fbbf24' : T.textSub, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name}</p>
             <p style={{ fontSize: 12, fontWeight: 700, color: T.accent }}>{u.pts}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Widget 4: Dica Ecológica */}
-      <div style={{ ...blockStyle, background: T.accentSub, border: `1px solid ${T.accentBorder}` }}>
+      <motion.div variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }} style={{ ...blockStyle, background: T.accentSub, border: `1px solid ${T.accentBorder}` }}>
         <p style={{ fontSize: 10, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700, marginBottom: 8 }}>💡 Dica do Dia</p>
         <p style={{ fontSize: 13, color: T.textSub, lineHeight: 1.5 }}>{tip}</p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -948,10 +956,11 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
       <div style={{ flex: 1, minWidth: 0, width: '100%', maxWidth: isMobile ? 'none' : 640 }}>
         
         {/* Header Superior - Abas Animadas (Estilo Twitter/X) */}
-        <div style={{ 
+        <div className="hide-scroll" style={{ 
           display: 'flex', borderBottom: `1px solid ${T.border}`, 
           marginBottom: 20, position: 'sticky', top: 0, background: T.bgCard + 'E6', 
-          backdropFilter: 'blur(10px)', zIndex: 10, borderRadius: 12 
+          backdropFilter: 'blur(10px)', zIndex: 10, borderRadius: 12,
+          overflowX: 'auto', WebkitOverflowScrolling: 'touch'
         }}>
           {[
             { id: 'para-voce', label: 'Para Você 🌍' },
@@ -959,26 +968,28 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
             { id: 'trending', label: 'Trending 🔥' },
             { id: 'minhas-categorias', label: 'Minhas Iniciativas 🎖️' }
           ].map(aba => (
-            <button
+            <motion.button
               key={aba.id}
               onClick={() => setFiltro(aba.id)}
+              whileHover={{ backgroundColor: T.bgCardHover }}
+              whileTap={{ scale: 0.95 }}
               style={{
-                flex: 1, padding: '16px 0', border: 'none', background: 'none',
+                flex: isMobile ? '0 0 auto' : 1, padding: '14px 16px', border: 'none', background: 'transparent',
                 color: filtro === aba.id ? T.accent : T.textMuted,
                 fontWeight: 700, fontSize: 13, cursor: 'pointer', position: 'relative',
-                transition: 'color 0.2s'
+                transition: 'color 0.2s', whiteSpace: 'nowrap', borderRadius: 8, margin: '2px 4px'
               }}>
               {aba.label}
               {filtro === aba.id && (
                 <motion.div
                   layoutId="activeTabUnderline"
                   style={{
-                    position: 'absolute', bottom: 0, left: '20%', right: '20%',
+                    position: 'absolute', bottom: -2, left: 12, right: 12,
                     height: 3, borderRadius: '3px 3px 0 0', background: T.accent
                   }}
                 />
               )}
-            </button>
+            </motion.button>
           ))}
         </div>
 
@@ -1133,7 +1144,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
         <RightPanel isDarkMode={isDarkMode} width={isTablet ? 240 : 280} />
       )}
 
-      {/* Estilos CSS do Shimmer Loading */}
+      {/* Estilos CSS Auxiliares */}
       <style>{`
         @keyframes shimmer {
           0% { background-position: -200% 0; }
@@ -1143,6 +1154,13 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
           background: linear-gradient(90deg, ${T.border} 25%, ${T.bgCardHover} 50%, ${T.border} 75%);
           background-size: 200% 100%;
           animation: shimmer 1.5s infinite linear;
+        }
+        .hide-scroll::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scroll {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>

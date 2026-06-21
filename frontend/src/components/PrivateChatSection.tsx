@@ -16,6 +16,7 @@ interface PrivateChatSectionProps {
   /** Se definido, abre automaticamente o chat com este amigo ao montar */
   initialFriendId?: number | null;
   initialFriendName?: string;
+  onGoToFriends?: () => void;
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -50,6 +51,7 @@ export function PrivateChatSection({
   isDarkMode,
   initialFriendId = null,
   initialFriendName = '',
+  onGoToFriends,
 }: PrivateChatSectionProps) {
   const T = theme(isDarkMode);
 
@@ -343,6 +345,13 @@ export function PrivateChatSection({
             >
               <MessageSquareDot size={36} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
               <p>Nenhuma conversa ainda.</p>
+              <button
+                type="button"
+                onClick={onGoToFriends}
+                style={{ marginTop: 10, fontSize: 12, color: T.accent, fontWeight: 800, cursor: 'pointer', border: 0, background: 'transparent' }}
+              >
+                Ver amigos e iniciar conversa →
+              </button>
               <p style={{ marginTop: 4, fontSize: 12 }}>
                 Vai a <strong style={{ color: T.accent }}>Amigos</strong> e clica no ícone 💬
               </p>

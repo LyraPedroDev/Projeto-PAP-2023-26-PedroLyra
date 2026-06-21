@@ -123,9 +123,11 @@ export function RankingSection({ userId }: RankingSectionProps) {
           return (
             <motion.div
               key={user.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: index * 0.15, type: 'spring', stiffness: 200, damping: 20 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
               onClick={async () => {
                 try {
                   const res = await fetch(`/api/friends/${userId}`);
@@ -188,7 +190,9 @@ export function RankingSection({ userId }: RankingSectionProps) {
                     key={user.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * 0.08, type: 'spring', stiffness: 200 }}
+                    whileHover={{ scale: 1.01, x: 5, backgroundColor: 'rgba(16, 185, 129, 0.05)' }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={async () => {
                       try {
                         const res = await fetch(`/api/friends/${userId}`);

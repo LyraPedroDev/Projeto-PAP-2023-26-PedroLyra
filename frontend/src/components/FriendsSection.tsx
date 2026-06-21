@@ -262,11 +262,20 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <motion.div 
+              className="space-y-3"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                visible: { transition: { staggerChildren: 0.1 } }
+              }}
+            >
               {pendingRequests.map((req) => (
-                <div
+                <motion.div
+                  variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}
+                  whileHover={{ scale: 1.01, x: 4 }}
                   key={req.id}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-gray-800 border-2 border-yellow-300 dark:border-yellow-700 shadow-sm"
+                  className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-gray-800 border-2 border-yellow-300 dark:border-yellow-700 shadow-sm transition-all"
                 >
                   <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center text-yellow-700 dark:text-yellow-300 font-bold text-lg">
                     {localStorage.getItem(`user_avatar_${req.id}`) || req.nome.charAt(0).toUpperCase()}
@@ -322,9 +331,9 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                       <X size={22} strokeWidth={3} />
                     </button>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </CardContent>
         </Card>
       )}
@@ -359,11 +368,20 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
               <p>{searchTerm ? "Nenhum amigo encontrado" : "Sua lista está vazia"}</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <motion.div 
+              className="space-y-3"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                visible: { transition: { staggerChildren: 0.08 } }
+              }}
+            >
               {filteredFriends.map((friend) => (
-                <div 
+                <motion.div 
+                  variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
+                  whileHover={{ scale: 1.01, backgroundColor: 'rgba(16, 185, 129, 0.05)' }}
                   key={friend.id}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 transition-all cursor-pointer"
                 >
                   <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-700 dark:text-green-300 font-bold text-lg">
                     {localStorage.getItem(`user_avatar_${friend.id}`) || friend.nome.charAt(0).toUpperCase()}
@@ -422,9 +440,9 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                       <Trash2 size={18} />
                     </button>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </CardContent>
       </Card>

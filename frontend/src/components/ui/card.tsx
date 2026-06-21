@@ -1,15 +1,18 @@
 import * as React from "react";
+import { motion } from "motion/react";
 
 import { cn } from "./utils";
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+function Card({ className, ...props }: React.ComponentProps<typeof motion.div>) {
   return (
-    <div
+    <motion.div
       data-slot="card"
       className={cn(
         "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border",
         className,
       )}
+      whileHover={{ y: -4, scale: 1.008 }}
+      transition={{ type: "spring", stiffness: 260, damping: 24 }}
       {...props}
     />
   );

@@ -10,6 +10,7 @@ from .private_message import PrivateMessage
 
 from ..extensions import db
 from werkzeug.security import generate_password_hash
+from sqlalchemy import text
 import random
 
 
@@ -48,6 +49,14 @@ def create_indexes():
 def init_db():
     """Cria tabelas e seed de dados iniciais (idêntico ao original)."""
     db.create_all()
+    columns = {
+        row[1] for row in db.session.execute(text("PRAGMA table_info(usuario)")).fetchall()
+    }
+    if 'is_admin' not in columns:
+        db.session.execute(text(
+            "ALTER TABLE usuario ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0"
+        ))
+        db.session.commit()
     create_indexes()
 
     usuarios_teste = [
@@ -68,6 +77,11 @@ def init_db():
             db.session.add(novo)
 
     db.session.commit()
+
+    admin = Usuario.query.filter_by(email="pedro@gmail.com").first()
+    if admin and not admin.is_admin:
+        admin.is_admin = True
+        db.session.commit()
 
     usuarios = Usuario.query.all()
     for usuario in usuarios:

@@ -1,145 +1,120 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { LoginPage } from './components/LoginPage';
 import { ChatPage } from './components/ChatPage';
-import { LandingPage } from './components/LandingPage';
 import { Toaster } from './components/ui/sonner';
 import { socket } from './services/socket';
 import { AIFloatingButton } from './components/AIFloatingButton';
 import { AIModal } from './components/AIModal';
 
-type Page = 'landing' | 'login' | 'app';
+type Page = 'login' | 'app';
+type AuthUser = { user_id: number; email: string; nome?: string; is_admin?: boolean };
 
 const THEME_KEY = 'ecochat_theme';
 
 export default function App() {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [startAsRegister, setStartAsRegister] = useState<boolean>(() => {
-    return window.history.state?.startAsRegister ?? false;
-  });
-
-  const [page, setPage] = useState<Page>(() => {
-    const path = window.location.pathname;
-    const loggedIn = localStorage.getItem('user_id') !== null;
-    
-    if (path === '/app' && loggedIn) return 'app';
-    if (path === '/login') return 'login';
-    return 'landing';
-  });
-
+  const [startAsRegister, setStartAsRegister] = useState(false);
+  const [page, setPage] = useState<Page>('login');
+  const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem(THEME_KEY);
     if (saved !== null) return saved === 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
-  const [userId, setUserId] = useState<number | null>(() => {
-    const saved = localStorage.getItem('user_id');
-    return saved ? Number(saved) : null;
-  });
+  const [userId, setUserId] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(THEME_KEY, isDarkMode ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
-  // Sincronizar history na inicialização (F5)
   useEffect(() => {
-    const path = window.location.pathname;
-    const loggedIn = localStorage.getItem('user_id') !== null;
-    
-    if (path === '/app') {
-      if (loggedIn) {
-        window.history.replaceState({ page: 'app', startAsRegister: false }, '', '/app');
-        if (!socket.connected) {
-          console.log('[App] Reconectando socket na inicialização...');
-          socket.connect();
-        }
-      } else {
-        setPage('landing');
-        window.history.replaceState({ page: 'landing', startAsRegister: false }, '', '/');
+    const restoreSession = async () => {
+      let res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) {
+        const refresh = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        if (refresh.ok) res = refresh;
       }
-    } else if (path === '/login') {
-      const isReg = window.history.state?.startAsRegister ?? false;
-      window.history.replaceState({ page: 'login', startAsRegister: isReg }, '', '/login');
-    } else {
-      window.history.replaceState({ page: 'landing', startAsRegister: false }, '', '/');
-    }
-  }, []);
 
-  // Listener do botão voltar/avançar (popstate)
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const statePage = event.state?.page ?? 'landing';
-      const isReg = event.state?.startAsRegister ?? false;
-      const loggedIn = localStorage.getItem('user_id') !== null;
-      
-      if (statePage === 'app' && !loggedIn) {
-        setPage('landing');
-        window.history.replaceState({ page: 'landing', startAsRegister: false }, '', '/');
+      if (res.ok) {
+        const data = await res.json();
+        const user = data.user;
+        setUserId(user.id);
+        setIsAdmin(Boolean(user.is_admin));
+        localStorage.setItem('user_id', String(user.id));
+        localStorage.setItem('user_email', user.email);
+        localStorage.setItem('user_name', user.nome);
+        setPage('app');
+        window.history.replaceState({ page: 'app' }, '', '/app');
+        if (!socket.connected) socket.connect();
       } else {
-        setPage(statePage);
-        setStartAsRegister(isReg);
+        localStorage.removeItem('user_id');
+        setPage('login');
+        window.history.replaceState({ page: 'login' }, '', '/login');
       }
+      setIsSessionLoading(false);
     };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+
+    restoreSession().catch(() => setIsSessionLoading(false));
   }, []);
 
-  const toggleTheme = () => setIsDarkMode(d => !d);
+  useEffect(() => {
+    if (page !== 'app') return;
+    const timer = window.setInterval(async () => {
+      const res = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) void handleLogout();
+    }, 10 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [page]);
 
-  const handleGoToSignup = () => {
-    setStartAsRegister(true);
-    setPage('login');
-    window.history.pushState({ page: 'login', startAsRegister: true }, '', '/login');
-  };
-
-  const handleGoToLogin = () => {
-    setStartAsRegister(false);
-    setPage('login');
-    window.history.pushState({ page: 'login', startAsRegister: false }, '', '/login');
-  };
+  const toggleTheme = () => setIsDarkMode(dark => !dark);
 
   const handleToggleLoginMode = (isLoginNow: boolean) => {
     setStartAsRegister(!isLoginNow);
-    window.history.replaceState({ page: 'login', startAsRegister: !isLoginNow }, '', '/login');
   };
 
-  const handleLogin = (userData: { user_id: number; email: string }) => {
+  const handleLogin = (userData: AuthUser) => {
     setUserId(userData.user_id);
+    setIsAdmin(Boolean(userData.is_admin));
+    localStorage.setItem('user_id', String(userData.user_id));
+    localStorage.setItem('user_email', userData.email);
+    if (userData.nome) localStorage.setItem('user_name', userData.nome);
     setPage('app');
-    window.history.pushState({ page: 'app', startAsRegister: false }, '', '/app');
+    window.history.pushState({ page: 'app' }, '', '/app');
 
-    // Ligar o socket DEPOIS do login
-    setTimeout(() => {
-      if (!socket.connected) {
-        console.log('[App] A ligar socket após login...');
-        socket.connect();
-      }
+    window.setTimeout(() => {
+      if (!socket.connected) socket.connect();
     }, 200);
   };
 
-  const handleLogout = () => {
-    if (socket.connected) {
-      socket.disconnect();
-      console.log('[App] Socket desligado no logout');
-    }
-    setPage('landing');
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => {});
+    if (socket.connected) socket.disconnect();
+    setPage('login');
     setUserId(null);
+    setIsAdmin(false);
     localStorage.removeItem('user_id');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_name');
-    window.history.pushState({ page: 'landing', startAsRegister: false }, '', '/');
+    window.history.pushState({ page: 'login' }, '', '/login');
   };
+
+  if (isSessionLoading) {
+    return <div style={{ minHeight: '100vh', background: '#040f07' }} />;
+  }
 
   return (
     <div className={isDarkMode ? 'dark' : ''}>
-      {page === 'landing' && (
-        <LandingPage
-          onLogin={handleGoToLogin}
-          onSignup={handleGoToSignup}
-          isDarkMode={isDarkMode}
-          toggleTheme={toggleTheme}
-        />
-      )}
       {page === 'login' && (
         <LoginPage
           onLogin={handleLogin}
@@ -149,19 +124,25 @@ export default function App() {
           toggleTheme={toggleTheme}
         />
       )}
-      {page === 'app' && (
+      {page === 'app' && userId !== null && (
         <ChatPage
           onLogout={handleLogout}
           isDarkMode={isDarkMode}
           toggleTheme={toggleTheme}
-          userId={userId!}
+          userId={userId}
+          isAdmin={isAdmin}
         />
       )}
       <Toaster />
 
-      {/* Botão Flutuante e Modal da IA */}
-      <AIFloatingButton onClick={() => setIsAIModalOpen(true)} />
-      <AIModal isOpen={isAIModalOpen} onClose={() => setIsAIModalOpen(false)} isDarkMode={isDarkMode} />
+      {page === 'app' && (
+        <AIFloatingButton onClick={() => setIsAIModalOpen(true)} />
+      )}
+      <AIModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 }

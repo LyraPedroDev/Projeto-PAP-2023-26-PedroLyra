@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from ..services.tasks_service import get_user_tasks, completar_tarefa, desmarcar_tarefa
 from ..models.tasks import Tarefa
+from ..auth_tokens import current_user, login_required
 
 tasks_bp = Blueprint('tasks', __name__)
 
@@ -15,14 +16,16 @@ def get_tasks():
 
 
 @tasks_bp.route('/api/tasks/user/<int:user_id>', methods=['GET'])
+@login_required
 def get_user_tasks_route(user_id):
-    return jsonify(get_user_tasks(user_id))
+    return jsonify(get_user_tasks(current_user().id))
 
 
 @tasks_bp.route('/api/tasks/complete', methods=['POST'])
+@login_required
 def complete_task():
     data = request.get_json()
-    user_id = data.get('user_id')
+    user_id = current_user().id
     tarefa_id = data.get('tarefa_id')
 
     if not user_id or not tarefa_id:
@@ -38,9 +41,10 @@ def complete_task():
 
 
 @tasks_bp.route('/api/tasks/uncomplete', methods=['POST'])
+@login_required
 def uncomplete_task():
     data = request.get_json()
-    user_id = data.get('user_id')
+    user_id = current_user().id
     tarefa_id = data.get('tarefa_id')
 
     if not user_id or not tarefa_id:
