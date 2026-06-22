@@ -16,6 +16,25 @@ admin_bp = Blueprint('admin', __name__)
 
 VALID_MISSION_CATEGORIES = {'daily', 'weekly', 'monthly'}
 VALID_ICONS = {'Leaf', 'Recycle', 'Droplet', 'Zap'}
+MISSION_CATEGORY_ALIASES = {
+    'daily': 'daily',
+    'diaria': 'daily',
+    'diária': 'daily',
+    'weekly': 'weekly',
+    'semanal': 'weekly',
+    'monthly': 'monthly',
+    'mensal': 'monthly',
+}
+MISSION_ICON_ALIASES = {
+    'leaf': 'Leaf',
+    'folha': 'Leaf',
+    'recycle': 'Recycle',
+    'reciclagem': 'Recycle',
+    'droplet': 'Droplet',
+    'gota': 'Droplet',
+    'zap': 'Zap',
+    'energia': 'Zap',
+}
 
 
 def _serialize_user(user, stats=None):
@@ -70,6 +89,25 @@ def _delete_user_dependencies(user_id):
     PrivateMessage.query.filter(
         (PrivateMessage.sender_id == user_id) | (PrivateMessage.receiver_id == user_id)
     ).delete(synchronize_session=False)
+
+
+def _normalize_mission_category(value):
+    normalized = (value or 'daily').strip().lower()
+    return MISSION_CATEGORY_ALIASES.get(normalized)
+
+
+def _normalize_mission_icon(value):
+    normalized = (value or 'Leaf').strip().lower()
+    return MISSION_ICON_ALIASES.get(normalized)
+
+
+def _normalize_points(value, default=10):
+    if value in (None, ''):
+        return default
+    try:
+        return max(int(value), 0)
+    except (TypeError, ValueError):
+        raise ValueError('Os pontos da missão devem ser um número inteiro igual ou superior a 0.')
 
 
 @admin_bp.route('/api/admin/overview', methods=['GET'])
@@ -274,9 +312,8 @@ def create_mission():
     data = request.get_json() or {}
     titulo = (data.get('titulo') or '').strip()
     descricao = (data.get('descricao') or '').strip()
-    categoria = (data.get('categoria') or 'daily').strip()
-    icone = (data.get('icone') or 'Leaf').strip()
-    pontos = data.get('pontos', 10)
+    categoria = _normalize_mission_category(data.get('categoria'))
+    icone = _normalize_mission_icon(data.get('icone'))
 
     if not titulo:
         return jsonify({'erro': 'O título da missão é obrigatório.'}), 400
@@ -284,11 +321,15 @@ def create_mission():
         return jsonify({'erro': 'Categoria de missão inválida.'}), 400
     if icone not in VALID_ICONS:
         return jsonify({'erro': 'Ícone inválido.'}), 400
+    try:
+        pontos = _normalize_points(data.get('pontos', 10), default=10)
+    except ValueError as exc:
+        return jsonify({'erro': str(exc)}), 400
 
     mission = Tarefa(
         titulo=titulo,
         descricao=descricao,
-        pontos=max(int(pontos), 0),
+        pontos=pontos,
         categoria=categoria,
         icone=icone,
     )
@@ -303,10 +344,9 @@ def update_mission(mission_id):
     mission = Tarefa.query.get_or_404(mission_id)
     data = request.get_json() or {}
     titulo = (data.get('titulo') or mission.titulo or '').strip()
-    descricao = (data.get('descricao') or mission.descricao or '').strip()
-    categoria = (data.get('categoria') or mission.categoria or 'daily').strip()
-    icone = (data.get('icone') or mission.icone or 'Leaf').strip()
-    pontos = data.get('pontos', mission.pontos)
+    descricao = (data.get('descricao') if 'descricao' in data else mission.descricao or '').strip()
+    categoria = _normalize_mission_category(data.get('categoria', mission.categoria))
+    icone = _normalize_mission_icon(data.get('icone', mission.icone))
 
     if not titulo:
         return jsonify({'erro': 'O título da missão é obrigatório.'}), 400
@@ -314,12 +354,16 @@ def update_mission(mission_id):
         return jsonify({'erro': 'Categoria de missão inválida.'}), 400
     if icone not in VALID_ICONS:
         return jsonify({'erro': 'Ícone inválido.'}), 400
+    try:
+        pontos = _normalize_points(data.get('pontos', mission.pontos), default=mission.pontos)
+    except ValueError as exc:
+        return jsonify({'erro': str(exc)}), 400
 
     mission.titulo = titulo
     mission.descricao = descricao
     mission.categoria = categoria
     mission.icone = icone
-    mission.pontos = max(int(pontos), 0)
+    mission.pontos = pontos
     db.session.commit()
     return jsonify(_serialize_mission(mission))
 

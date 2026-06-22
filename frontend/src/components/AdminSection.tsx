@@ -116,6 +116,46 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     load().catch(() => toast.error('Não foi possível carregar o painel administrativo'));
   }, [load]);
 
+  useEffect(() => {
+    const loadFallbackMissions = async () => {
+      if (missions.length > 0) return;
+      const response = await fetch('/api/tasks', { credentials: 'include' });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setMissions(data);
+      }
+    };
+
+    loadFallbackMissions().catch(() => {});
+  }, [missions.length]);
+
+  useEffect(() => {
+    const loadFallbackPosts = async () => {
+      if (posts.length > 0) return;
+      const response = await fetch(`/api/feed/${currentUserId}?page=1&limit=100&filtro=para-voce`, { credentials: 'include' });
+      if (!response.ok) return;
+      const payload = await response.json();
+      const feedPosts = payload?.data?.posts;
+      if (!Array.isArray(feedPosts) || feedPosts.length === 0) return;
+
+      const normalizedPosts: AdminPost[] = feedPosts.map((post: any) => ({
+        id: post.id,
+        user_id: post.usuario?.id ?? 0,
+        autor_nome: post.usuario?.nome ?? 'Utilizador',
+        autor_email: post.usuario?.username ? `${post.usuario.username}@...` : null,
+        descricao: post.descricao ?? '',
+        categoria: post.categoria ?? 'geral',
+        imagem: post.imagem_url ?? null,
+        criada_em: post.created_at ?? null,
+      }));
+
+      setPosts(normalizedPosts);
+    };
+
+    loadFallbackPosts().catch(() => {});
+  }, [posts.length, currentUserId]);
+
   const stats = overview ? [
     { label: 'Utilizadores', value: overview.users, icon: Users, color: '#10b981' },
     { label: 'Administradores', value: overview.admins, icon: ShieldCheck, color: '#06b6d4' },
@@ -386,7 +426,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     );
 
     const data = await res.json().catch(() => null);
-    if (!res.ok) return toast.error(data?.erro || 'Não foi possível guardar a missão');
+    if (!res.ok) return toast.error(data?.erro || data?.mensagem || 'Não foi possível guardar a missão');
 
     if (isEditing) {
       setMissions(current => current.map(item => item.id === data.id ? data : item));
@@ -582,7 +622,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
             <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0,1.2fr) minmax(300px,0.8fr)' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
-                  <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingPostId ? 'Editar publicação' : 'Criar publicação'}</h2>
+                  <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingPostId ? 'Editar conteúdo publicado' : 'Nova publicação'}</h2>
                   {editingPostId && <button onClick={resetPostForm} style={smallButtonStyle}>Cancelar edição</button>}
                 </div>
                 <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
@@ -615,7 +655,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
 
               <div style={{ border: `1px solid ${T.border}`, borderRadius: 16, background: T.bgSurface, padding: 16 }}>
                 <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>
-                  Publicações já existentes {postFilterUserId !== 'todos' && '(filtradas)'}
+                  Biblioteca de publicações {postFilterUserId !== 'todos' && '(filtrada)'}
                 </h3>
                 <div style={{ display: 'grid', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
                   {filteredPosts.length === 0 ? (
@@ -637,7 +677,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
           </section>
 
           <section style={cardStyle}>
-            <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Gestão de publicações</h2>
+            <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Controlo de publicações</h2>
             <div style={{ display: 'grid', gap: 10 }}>
               {filteredPosts.length === 0 ? (
                 <p style={{ color: T.textMuted, fontSize: 13 }}>
@@ -672,7 +712,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
             <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0,1.2fr) minmax(300px,0.8fr)' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
-                  <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingMissionId ? 'Editar missão' : 'Criar missão'}</h2>
+                  <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingMissionId ? 'Editar missão ecológica' : 'Nova missão ecológica'}</h2>
                   {editingMissionId && <button onClick={resetMissionForm} style={smallButtonStyle}>Cancelar edição</button>}
                 </div>
                 <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
@@ -694,7 +734,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
               </div>
 
               <div style={{ border: `1px solid ${T.border}`, borderRadius: 16, background: T.bgSurface, padding: 16 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>Missões já existentes</h3>
+                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>Biblioteca de missões</h3>
                 <div style={{ display: 'grid', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
                   {missions.length === 0 ? (
                     <p style={{ color: T.textMuted, fontSize: 13 }}>Nenhuma missão encontrada.</p>
@@ -712,7 +752,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
           </section>
 
           <section style={cardStyle}>
-            <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Gestão de missões</h2>
+            <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Controlo de missões</h2>
             <div style={{ display: 'grid', gap: 10 }}>
               {missions.length === 0 ? (
                 <p style={{ color: T.textMuted, fontSize: 13 }}>Ainda não existem missões para gerir.</p>
