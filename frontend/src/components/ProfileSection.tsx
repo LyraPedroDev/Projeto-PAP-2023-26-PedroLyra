@@ -407,13 +407,14 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
       >
-        <Card className="border-green-200 dark:border-gray-700">
+        <Card className="border-green-200 shadow-sm dark:border-gray-700">
           <CardHeader>
             <CardTitle className="dark:text-gray-200">Alterar Senha</CardTitle>
             <CardDescription className="dark:text-gray-400">Mantenha sua conta segura</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleChangePassword} className="space-y-4">
+            <form onSubmit={handleChangePassword} className="space-y-5">
+              <div className="grid gap-5">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword" className="dark:text-gray-200">Senha Atual</Label>
                 <div className="relative">
@@ -425,7 +426,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                     onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
                     className="pl-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     style={{ paddingRight: 44 }}
-                  />
+                    />
                 </div>
               </div>
               
@@ -440,7 +441,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                     onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                     className="pl-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     style={{ paddingRight: 44 }}
-                  />
+                    />
                 </div>
               </div>
               
@@ -455,23 +456,26 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     className="pl-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     style={{ paddingRight: 44 }}
-                  />
+                    />
                 </div>
               </div>
+              </div>
               
-              <button
-                type="button"
-                onClick={() => setShowPasswords(value => !value)}
-                className="inline-flex items-center gap-2 text-sm text-green-600 dark:text-green-400"
-              >
-                {showPasswords ? <EyeOff size={17} /> : <Eye size={17} />}
-                {showPasswords ? 'Ocultar palavras-passe' : 'Mostrar palavras-passe'}
-              </button>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords(value => !value)}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-green-600 dark:text-green-400"
+                >
+                  {showPasswords ? <EyeOff size={17} /> : <Eye size={17} />}
+                  {showPasswords ? 'Ocultar palavras-passe' : 'Mostrar palavras-passe'}
+                </button>
 
-              <Button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white">
-                <Lock size={20} className="mr-2" />
-                Alterar Senha
-              </Button>
+                <Button type="submit" className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-indigo-600 px-6 hover:from-blue-600 hover:to-indigo-700 text-white">
+                  <Lock size={20} className="mr-2" />
+                  Alterar Senha
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

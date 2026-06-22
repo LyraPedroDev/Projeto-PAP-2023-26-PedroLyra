@@ -235,7 +235,7 @@ export function PrivateChatSection({
     borderRight: `1px solid ${T.border}`,
     display: 'flex',
     flexDirection: 'column',
-    background: T.bgCard,
+    background: isDarkMode ? 'rgba(255,255,255,0.03)' : 'linear-gradient(180deg,#ffffff 0%,#f7fdf9 100%)',
     height: '100%',
   };
 
@@ -253,7 +253,7 @@ export function PrivateChatSection({
         display: 'flex',
         height: 'calc(100vh - 56px)',
         background: T.bg,
-        borderRadius: 16,
+        borderRadius: 24,
         overflow: 'hidden',
         border: `1px solid ${T.border}`,
         boxShadow: isDarkMode
@@ -478,21 +478,39 @@ export function PrivateChatSection({
               justifyContent: 'center',
               color: T.textMuted,
               gap: 16,
+              padding: 32,
+              textAlign: 'center',
+              background: isDarkMode
+                ? 'radial-gradient(circle at center, rgba(16,185,129,0.08) 0%, transparent 60%)'
+                : 'radial-gradient(circle at center, rgba(16,185,129,0.10) 0%, transparent 60%)',
             }}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 200 }}
+              style={{
+                width: 96,
+                height: 96,
+                borderRadius: 28,
+                background: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.9)',
+                border: `1px solid ${T.border}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: isDarkMode ? 'none' : '0 20px 40px rgba(15,23,42,0.06)',
+              }}
             >
-              <MessageSquareDot size={64} color={T.accentBorder} />
+              <MessageSquareDot size={44} color={T.accent} />
             </motion.div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: T.textSub }}>
-              Seleciona uma conversa
-            </p>
-            <p style={{ fontSize: 13, color: T.textMuted }}>
-              ou vai a Amigos para iniciar uma nova
-            </p>
+            <div style={{ maxWidth: 320 }}>
+              <p style={{ fontSize: 20, fontWeight: 800, color: T.text, marginBottom: 8 }}>
+                Selecione uma conversa
+              </p>
+              <p style={{ fontSize: 14, color: T.textMuted, lineHeight: 1.6 }}>
+                Escolha uma conversa existente na barra lateral ou vá à secção de amigos para iniciar uma nova mensagem.
+              </p>
+            </div>
           </div>
         ) : (
           <>

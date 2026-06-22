@@ -197,14 +197,18 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       <motion.div 
         initial={{ opacity: 0, y: -20 }} 
         animate={{ opacity: 1, y: 0 }} 
-        className="flex items-center gap-3"
+        className="flex items-center gap-4 rounded-3xl border border-green-100 bg-gradient-to-r from-green-50 to-emerald-50 p-6 shadow-sm dark:border-green-900/40 dark:bg-gradient-to-r dark:from-green-950/30 dark:to-emerald-950/20"
       >
-        <Users className="text-green-600 dark:text-green-400" size={32} />
-        <h1 className="text-3xl font-bold text-green-800 dark:text-green-300">Amigos</h1>
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg shadow-green-500/20">
+          <Users size={28} />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold text-green-900 dark:text-green-300">Comunidade e Amigos</h1>
+          <p className="text-sm text-green-700/80 dark:text-green-200/70">Adicione contactos, aceite convites e mantenha a sua rede sustentável organizada.</p>
+        </div>
       </motion.div>
 
-      {/* 🎨 ADICIONAR AMIGO - BOTÃO COM ESTILO FORÇADO */}
-      <Card className="border-green-200 dark:border-green-800">
+      <Card className="overflow-hidden border-green-200 shadow-sm dark:border-green-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <UserPlus size={20} className="text-green-600 dark:text-green-400" />
@@ -215,7 +219,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 md:flex-row">
             <Input
               placeholder="email@exemplo.com, Nome ou ID"
               value={addValue}
@@ -224,21 +228,21 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
               disabled={isAdding}
               className="flex-1"
             />
-            {/* 🎨 BOTÃO COM CORES FORÇADAS */}
             <button
               onClick={addFriend}
               disabled={isAdding}
               style={{
                 padding: '0 24px',
-                height: '40px',
+                height: '44px',
                 backgroundColor: isAdding ? '#9ca3af' : '#16a34a',
                 color: '#ffffff',
                 border: 'none',
-                borderRadius: '6px',
-                fontWeight: '500',
+                borderRadius: '12px',
+                fontWeight: '700',
                 cursor: isAdding ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s',
-                minWidth: '100px'
+                minWidth: '130px',
+                boxShadow: isAdding ? 'none' : '0 12px 24px rgba(22,163,74,0.18)'
               }}
               onMouseEnter={(e) => !isAdding && (e.currentTarget.style.backgroundColor = '#15803d')}
               onMouseLeave={(e) => !isAdding && (e.currentTarget.style.backgroundColor = '#16a34a')}
@@ -251,7 +255,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
 
       {/* PEDIDOS PENDENTES */}
       {pendingRequests.length > 0 && (
-        <Card className="border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20">
+        <Card className="border-yellow-300 bg-yellow-50/90 shadow-sm dark:border-yellow-700 dark:bg-yellow-900/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
               <Clock size={20} className="text-yellow-600 dark:text-yellow-400" />
@@ -275,7 +279,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                   variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}
                   whileHover={{ scale: 1.01, x: 4 }}
                   key={req.id}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-white dark:bg-gray-800 border-2 border-yellow-300 dark:border-yellow-700 shadow-sm transition-all"
+                  className="flex items-center gap-4 rounded-2xl border-2 border-yellow-300 bg-white p-4 shadow-sm transition-all dark:border-yellow-700 dark:bg-gray-800"
                 >
                   <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center text-yellow-700 dark:text-yellow-300 font-bold text-lg">
                     {localStorage.getItem(`user_avatar_${req.id}`) || req.nome.charAt(0).toUpperCase()}
@@ -339,7 +343,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       )}
 
       {/* BUSCAR */}
-      <Card>
+      <Card className="border-green-100 shadow-sm dark:border-gray-800">
         <CardContent className="p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -354,7 +358,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       </Card>
 
       {/* 🔥 LISTA DE AMIGOS - COM BOTÃO DE CHAT */}
-      <Card>
+      <Card className="border-green-100 shadow-sm dark:border-gray-800">
         <CardHeader>
           <CardTitle className="text-gray-900 dark:text-gray-100">Meus Amigos</CardTitle>
           <CardDescription className="text-gray-600 dark:text-gray-400">
@@ -381,7 +385,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                   variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
                   whileHover={{ scale: 1.01, backgroundColor: 'rgba(16, 185, 129, 0.05)' }}
                   key={friend.id}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-transparent dark:border-gray-700 transition-all cursor-pointer"
+                  className="flex items-center gap-4 rounded-2xl border border-green-100 bg-gradient-to-r from-white to-green-50/70 p-4 transition-all cursor-pointer dark:border-gray-700 dark:bg-gray-800"
                 >
                   <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-700 dark:text-green-300 font-bold text-lg">
                     {localStorage.getItem(`user_avatar_${friend.id}`) || friend.nome.charAt(0).toUpperCase()}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { Sun, Moon, ArrowRight, Star, Users, Zap, Shield, ChevronDown, MessageCircle, Trophy, Camera } from 'lucide-react';
-import { LeafLogo } from './ui/LeafLogo';
+import { BrandLogo } from './ui/BrandLogo';
 import landingBG from '../assets/landingpageBG.png';
 
 interface LandingPageProps {
@@ -127,8 +127,8 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
           borderBottom: scrolled ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 68, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 10, padding: '7px 8px', display: 'flex' }}>
-              <LeafLogo size={17} color="white" />
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <BrandLogo size={22} animate={false} />
             </div>
             <span style={{ fontWeight: 900, fontSize: 20, letterSpacing: '-0.03em', color: '#fff' }}>EcoChat</span>
           </div>
@@ -150,12 +150,6 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
       <section style={{ backgroundImage: `url(${landingBG})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed', minHeight: '100vh', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,rgba(2,8,4,0.65) 0%,rgba(2,12,6,0.82) 50%,rgba(2,11,5,1) 100%)' }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 1200, margin: '0 auto', padding: '0 24px', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', paddingTop: 100, paddingBottom: 80 }}>
-
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} style={{ marginBottom: 32 }}>
-            <span style={{ background: 'rgba(16,185,129,0.14)', border: '1px solid rgba(16,185,129,0.35)', color: '#34d399', fontSize: 11, fontWeight: 700, padding: '7px 18px', borderRadius: 100, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-              🌍 EcoChat
-            </span>
-          </motion.div>
 
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, duration: 0.75 }}
             style={{ fontSize: 'clamp(48px,8vw,96px)', fontWeight: 900, letterSpacing: '-0.045em', lineHeight: 1.04, color: '#fff', marginBottom: 28, maxWidth: 900 }}>
@@ -198,7 +192,9 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
               {/* Sidebar */}
               <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 12, padding: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                  <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 7, padding: 5, display: 'flex' }}><LeafLogo size={12} color="white" /></div>
+                  <div style={{ width: 24, height: 24, borderRadius: 8, background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <BrandLogo size={14} animate={false} />
+                  </div>
                   <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>EcoChat</span>
                 </div>
                 {['🏠 Feed', '🤖 EcoBot', '🏆 Ranking', '👤 Perfil'].map(item => (
@@ -337,7 +333,9 @@ export function LandingPage({ onLogin, onSignup, isDarkMode, toggleTheme }: Land
       <footer style={{ background: '#020b05', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '36px 24px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ background: 'linear-gradient(135deg,#10b981,#059669)', borderRadius: 8, padding: '5px 6px', display: 'flex' }}><LeafLogo size={13} color="white" /></div>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <BrandLogo size={17} animate={false} />
+            </div>
             <span style={{ fontWeight: 800, fontSize: 15, color: 'rgba(255,255,255,0.8)' }}>EcoChat</span>
           </div>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.03em' }}>EcoChat &copy; Todos os direitos reservados</p>
