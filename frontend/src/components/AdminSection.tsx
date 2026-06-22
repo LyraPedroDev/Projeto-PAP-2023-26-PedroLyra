@@ -51,6 +51,18 @@ type AdminTab = 'users' | 'posts' | 'missions';
 
 const MISSION_CATEGORIES = ['daily', 'weekly', 'monthly'];
 const MISSION_ICONS = ['Leaf', 'Recycle', 'Droplet', 'Zap'];
+const CATEGORY_LABELS: Record<string, string> = {
+  daily: 'Diária',
+  weekly: 'Semanal',
+  monthly: 'Mensal',
+  geral: 'Geral',
+};
+const ICON_LABELS: Record<string, string> = {
+  Leaf: 'Folha',
+  Recycle: 'Reciclagem',
+  Droplet: 'Gota',
+  Zap: 'Energia',
+};
 
 export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const T = theme(isDarkMode);
@@ -96,6 +108,9 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     { label: 'Publicações', value: overview.posts, icon: FileText, color: '#8b5cf6' },
     { label: 'Missões', value: overview.missions, icon: BarChart3, color: '#f59e0b' },
   ] : [];
+
+  const getCategoryLabel = (value: string) => CATEGORY_LABELS[value] || value;
+  const getIconLabel = (value: string) => ICON_LABELS[value] || value;
 
   const tabButtonStyle = (tab: AdminTab) => ({
     border: `1px solid ${activeTab === tab ? T.accentBorder : T.border}`,
@@ -446,7 +461,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
             style={{ marginTop: 18, padding: 18, borderRadius: 14, background: T.accentSub, border: `1px solid ${T.accentBorder}` }}>
             <strong>{mission.titulo}</strong>
             <p style={{ color: T.textSub, fontSize: 13, marginTop: 5 }}>{mission.descricao}</p>
-            <span style={{ display: 'inline-block', marginTop: 9, color: T.accent, fontWeight: 800 }}>+{mission.pontos} pontos · {mission.categoria}</span>
+            <span style={{ display: 'inline-block', marginTop: 9, color: T.accent, fontWeight: 800 }}>+{mission.pontos} pontos · {getCategoryLabel(mission.categoria)}</span>
           </motion.div>
         )}
       </motion.section>
@@ -460,25 +475,41 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       {activeTab === 'users' && (
         <div style={{ display: 'grid', gap: 18 }}>
           <section style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ fontSize: 19, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Crown size={20} color="#f59e0b" /> {editingUserId ? 'Editar utilizador' : 'Criar utilizador'}
-              </h2>
-              {editingUserId && <button onClick={resetUserForm} style={smallButtonStyle}>Cancelar edição</button>}
-            </div>
-            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
-              <input placeholder="Nome" value={userForm.nome} onChange={e => setUserForm(current => ({ ...current, nome: e.target.value }))} style={inputStyle} />
-              <input placeholder="Email" value={userForm.email} onChange={e => setUserForm(current => ({ ...current, email: e.target.value }))} style={inputStyle} />
-              <input placeholder={editingUserId ? 'Nova senha (opcional)' : 'Senha'} type="password" value={userForm.senha} onChange={e => setUserForm(current => ({ ...current, senha: e.target.value }))} style={inputStyle} />
-            </div>
-            <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 12, color: T.textSub }}>
-              <input type="checkbox" checked={userForm.is_admin} onChange={e => setUserForm(current => ({ ...current, is_admin: e.target.checked }))} />
-              Definir como administrador
-            </label>
-            <div style={{ marginTop: 14 }}>
-              <button onClick={submitUser} style={primaryButtonStyle}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingUserId ? 'Guardar alterações' : 'Criar utilizador'}</span>
-              </button>
+            <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0,1.2fr) minmax(300px,0.8fr)' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+                  <h2 style={{ fontSize: 19, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Crown size={20} color="#f59e0b" /> {editingUserId ? 'Editar utilizador' : 'Criar utilizador'}
+                  </h2>
+                  {editingUserId && <button onClick={resetUserForm} style={smallButtonStyle}>Cancelar edição</button>}
+                </div>
+                <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
+                  <input placeholder="Nome" value={userForm.nome} onChange={e => setUserForm(current => ({ ...current, nome: e.target.value }))} style={inputStyle} />
+                  <input placeholder="Email" value={userForm.email} onChange={e => setUserForm(current => ({ ...current, email: e.target.value }))} style={inputStyle} />
+                  <input placeholder={editingUserId ? 'Nova senha (opcional)' : 'Senha'} type="password" value={userForm.senha} onChange={e => setUserForm(current => ({ ...current, senha: e.target.value }))} style={inputStyle} />
+                </div>
+                <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 12, color: T.textSub }}>
+                  <input type="checkbox" checked={userForm.is_admin} onChange={e => setUserForm(current => ({ ...current, is_admin: e.target.checked }))} />
+                  Definir como administrador
+                </label>
+                <div style={{ marginTop: 14 }}>
+                  <button onClick={submitUser} style={primaryButtonStyle}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingUserId ? 'Guardar alterações' : 'Criar utilizador'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ border: `1px solid ${T.border}`, borderRadius: 16, background: T.bgSurface, padding: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>Utilizadores já existentes</h3>
+                <div style={{ display: 'grid', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
+                  {users.map(user => (
+                    <div key={user.id} style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard }}>
+                      <p style={{ fontWeight: 700 }}>{user.nome}</p>
+                      <p style={{ color: T.textMuted, fontSize: 12 }}>{user.email}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
 
@@ -512,25 +543,41 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       {activeTab === 'posts' && (
         <div style={{ display: 'grid', gap: 18 }}>
           <section style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingPostId ? 'Editar publicação' : 'Criar publicação'}</h2>
-              {editingPostId && <button onClick={resetPostForm} style={smallButtonStyle}>Cancelar edição</button>}
-            </div>
-            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
-              <select value={postForm.user_id} onChange={e => setPostForm(current => ({ ...current, user_id: e.target.value }))} style={inputStyle}>
-                <option value="">Seleciona o autor</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>{user.nome} ({user.email})</option>
-                ))}
-              </select>
-              <input placeholder="Categoria" value={postForm.categoria} onChange={e => setPostForm(current => ({ ...current, categoria: e.target.value }))} style={inputStyle} />
-              <input placeholder="Nome da imagem (opcional)" value={postForm.imagem} onChange={e => setPostForm(current => ({ ...current, imagem: e.target.value }))} style={inputStyle} />
-            </div>
-            <textarea placeholder="Descrição da publicação" value={postForm.descricao} onChange={e => setPostForm(current => ({ ...current, descricao: e.target.value }))} style={{ ...textAreaStyle, marginTop: 12 }} />
-            <div style={{ marginTop: 14 }}>
-              <button onClick={submitPost} style={primaryButtonStyle}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingPostId ? 'Guardar alterações' : 'Criar publicação'}</span>
-              </button>
+            <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0,1.2fr) minmax(300px,0.8fr)' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+                  <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingPostId ? 'Editar publicação' : 'Criar publicação'}</h2>
+                  {editingPostId && <button onClick={resetPostForm} style={smallButtonStyle}>Cancelar edição</button>}
+                </div>
+                <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
+                  <select value={postForm.user_id} onChange={e => setPostForm(current => ({ ...current, user_id: e.target.value }))} style={inputStyle}>
+                    <option value="">Seleciona o autor</option>
+                    {users.map(user => (
+                      <option key={user.id} value={user.id}>{user.nome} ({user.email})</option>
+                    ))}
+                  </select>
+                  <input placeholder="Categoria" value={postForm.categoria} onChange={e => setPostForm(current => ({ ...current, categoria: e.target.value }))} style={inputStyle} />
+                  <input placeholder="Nome da imagem (opcional)" value={postForm.imagem} onChange={e => setPostForm(current => ({ ...current, imagem: e.target.value }))} style={inputStyle} />
+                </div>
+                <textarea placeholder="Descrição da publicação" value={postForm.descricao} onChange={e => setPostForm(current => ({ ...current, descricao: e.target.value }))} style={{ ...textAreaStyle, marginTop: 12 }} />
+                <div style={{ marginTop: 14 }}>
+                  <button onClick={submitPost} style={primaryButtonStyle}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingPostId ? 'Guardar alterações' : 'Criar publicação'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ border: `1px solid ${T.border}`, borderRadius: 16, background: T.bgSurface, padding: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>Publicações já existentes</h3>
+                <div style={{ display: 'grid', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
+                  {posts.map(post => (
+                    <div key={post.id} style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard }}>
+                      <p style={{ fontWeight: 700 }}>#{post.id} · {post.autor_nome}</p>
+                      <p style={{ color: T.textMuted, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.descricao}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
 
@@ -563,25 +610,41 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       {activeTab === 'missions' && (
         <div style={{ display: 'grid', gap: 18 }}>
           <section style={cardStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingMissionId ? 'Editar missão' : 'Criar missão'}</h2>
-              {editingMissionId && <button onClick={resetMissionForm} style={smallButtonStyle}>Cancelar edição</button>}
-            </div>
-            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
-              <input placeholder="Título" value={missionForm.titulo} onChange={e => setMissionForm(current => ({ ...current, titulo: e.target.value }))} style={inputStyle} />
-              <input placeholder="Pontos" type="number" min={0} value={missionForm.pontos} onChange={e => setMissionForm(current => ({ ...current, pontos: e.target.value }))} style={inputStyle} />
-              <select value={missionForm.categoria} onChange={e => setMissionForm(current => ({ ...current, categoria: e.target.value }))} style={inputStyle}>
-                {MISSION_CATEGORIES.map(item => <option key={item} value={item}>{item}</option>)}
-              </select>
-              <select value={missionForm.icone} onChange={e => setMissionForm(current => ({ ...current, icone: e.target.value }))} style={inputStyle}>
-                {MISSION_ICONS.map(item => <option key={item} value={item}>{item}</option>)}
-              </select>
-            </div>
-            <textarea placeholder="Descrição da missão" value={missionForm.descricao} onChange={e => setMissionForm(current => ({ ...current, descricao: e.target.value }))} style={{ ...textAreaStyle, marginTop: 12 }} />
-            <div style={{ marginTop: 14 }}>
-              <button onClick={submitMission} style={primaryButtonStyle}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingMissionId ? 'Guardar alterações' : 'Criar missão'}</span>
-              </button>
+            <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'minmax(0,1.2fr) minmax(300px,0.8fr)' }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+                  <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingMissionId ? 'Editar missão' : 'Criar missão'}</h2>
+                  {editingMissionId && <button onClick={resetMissionForm} style={smallButtonStyle}>Cancelar edição</button>}
+                </div>
+                <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
+                  <input placeholder="Título" value={missionForm.titulo} onChange={e => setMissionForm(current => ({ ...current, titulo: e.target.value }))} style={inputStyle} />
+                  <input placeholder="Pontos" type="number" min={0} value={missionForm.pontos} onChange={e => setMissionForm(current => ({ ...current, pontos: e.target.value }))} style={inputStyle} />
+                  <select value={missionForm.categoria} onChange={e => setMissionForm(current => ({ ...current, categoria: e.target.value }))} style={inputStyle}>
+                    {MISSION_CATEGORIES.map(item => <option key={item} value={item}>{getCategoryLabel(item)}</option>)}
+                  </select>
+                  <select value={missionForm.icone} onChange={e => setMissionForm(current => ({ ...current, icone: e.target.value }))} style={inputStyle}>
+                    {MISSION_ICONS.map(item => <option key={item} value={item}>{getIconLabel(item)}</option>)}
+                  </select>
+                </div>
+                <textarea placeholder="Descrição da missão" value={missionForm.descricao} onChange={e => setMissionForm(current => ({ ...current, descricao: e.target.value }))} style={{ ...textAreaStyle, marginTop: 12 }} />
+                <div style={{ marginTop: 14 }}>
+                  <button onClick={submitMission} style={primaryButtonStyle}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingMissionId ? 'Guardar alterações' : 'Criar missão'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ border: `1px solid ${T.border}`, borderRadius: 16, background: T.bgSurface, padding: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>Missões já existentes</h3>
+                <div style={{ display: 'grid', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
+                  {missions.map(item => (
+                    <div key={item.id} style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard }}>
+                      <p style={{ fontWeight: 700 }}>{item.titulo}</p>
+                      <p style={{ color: T.textMuted, fontSize: 12 }}>{getCategoryLabel(item.categoria)} · +{item.pontos} pontos</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
 
@@ -593,7 +656,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div>
                       <p style={{ fontWeight: 800 }}>{item.titulo}</p>
-                      <p style={{ color: T.textMuted, fontSize: 12 }}>{item.categoria} · {item.icone} · +{item.pontos} pontos</p>
+                      <p style={{ color: T.textMuted, fontSize: 12 }}>{getCategoryLabel(item.categoria)} · {getIconLabel(item.icone)} · +{item.pontos} pontos</p>
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button onClick={() => editMission(item)} style={smallButtonStyle}>Editar</button>
