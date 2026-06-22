@@ -16,16 +16,20 @@ def calcular_nivel(pontos: int) -> str:
 def atualizar_streak(stats) -> None:
     """Atualiza streak e dias_ativos no objeto UserStats."""
     hoje = date.today()
+
     if stats.ultima_missao is None:
         stats.streak_atual = 1
+        stats.dias_ativos += 1
     elif stats.ultima_missao == hoje:
-        pass  # Já completou hoje, streak não muda
+        return
     elif stats.ultima_missao == hoje - timedelta(days=1):
         stats.streak_atual += 1  # Dia consecutivo!
+        stats.dias_ativos += 1
     else:
         stats.streak_atual = 1  # Quebrou a sequência, recomeça
+        stats.dias_ativos += 1
+
     stats.ultima_missao = hoje
-    stats.dias_ativos += 1
 
 
 def adicionar_pontos(stats, pontos: int) -> str | None:
