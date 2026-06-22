@@ -59,11 +59,10 @@ def init_db():
     create_indexes()
 
     usuarios_teste = [
-        {"nome": "Usuário Teste", "email": "teste@eco.com", "senha": "123456"},
-        {"nome": "Maria Silva", "email": "maria@email.com", "senha": "123456"},
-        {"nome": "João Pedro", "email": "joao@email.com", "senha": "123456"},
-        {"nome": "Ana Costa", "email": "ana@email.com", "senha": "123456"},
-        {"nome": "Pedro Lyra", "email": "pedro@gmail.com", "senha": "123456"},
+        {"nome": "Gabriel", "email": "gabriel@gmail.com", "senha": "123456"},
+        {"nome": "Carla", "email": "carla@gmail.com", "senha": "123456"},
+        {"nome": "Admin", "email": "admin@ecochat.com", "senha": "123456"},
+        {"nome": "Pedro", "email": "pedro@gmail.com", "senha": "123456"},
     ]
 
     for user_data in usuarios_teste:
@@ -77,7 +76,7 @@ def init_db():
 
     db.session.commit()
 
-    admin = Usuario.query.filter_by(email="pedro@gmail.com").first()
+    admin = Usuario.query.filter_by(email="admin@ecochat.com").first()
     if admin and not admin.is_admin:
         admin.is_admin = True
         db.session.commit()

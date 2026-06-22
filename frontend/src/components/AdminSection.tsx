@@ -81,9 +81,31 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const [postForm, setPostForm] = useState({ user_id: '', descricao: '', categoria: 'geral', imagem: '' });
   const [missionForm, setMissionForm] = useState({ titulo: '', descricao: '', pontos: '10', categoria: 'daily', icone: 'Leaf' });
 
+  const apiFetch = useCallback(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const send = () => fetch(input, {
+      ...init,
+      credentials: 'include',
+      headers: {
+        ...(init?.headers || {}),
+      },
+    });
+
+    let response = await send();
+    if (response.status !== 401) return response;
+
+    const refresh = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    if (!refresh.ok) return response;
+    response = await send();
+    return response;
+  }, []);
+
   const load = useCallback(async () => {
     const loadJson = async <T,>(url: string): Promise<T> => {
-      const response = await fetch(url, { credentials: 'include' });
+      const response = await apiFetch(url);
       if (!response.ok) {
         throw new Error(url);
       }
@@ -110,7 +132,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     ) {
       throw new Error();
     }
-  }, []);
+  }, [apiFetch]);
 
   useEffect(() => {
     load().catch(() => toast.error('Não foi possível carregar o painel administrativo'));
@@ -119,7 +141,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   useEffect(() => {
     const loadFallbackMissions = async () => {
       if (missions.length > 0) return;
-      const response = await fetch('/api/tasks', { credentials: 'include' });
+      const response = await apiFetch('/api/tasks');
       if (!response.ok) return;
       const data = await response.json();
       if (Array.isArray(data) && data.length > 0) {
@@ -128,12 +150,12 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     };
 
     loadFallbackMissions().catch(() => {});
-  }, [missions.length]);
+  }, [apiFetch, missions.length]);
 
   useEffect(() => {
     const loadFallbackPosts = async () => {
       if (posts.length > 0) return;
-      const response = await fetch(`/api/feed/${currentUserId}?page=1&limit=100&filtro=para-voce`, { credentials: 'include' });
+      const response = await apiFetch(`/api/feed/${currentUserId}?page=1&limit=100&filtro=para-voce`);
       if (!response.ok) return;
       const payload = await response.json();
       const feedPosts = payload?.data?.posts;
@@ -154,7 +176,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     };
 
     loadFallbackPosts().catch(() => {});
-  }, [posts.length, currentUserId]);
+  }, [apiFetch, posts.length, currentUserId]);
 
   const stats = overview ? [
     { label: 'Utilizadores', value: overview.users, icon: Users, color: '#10b981' },
@@ -235,7 +257,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   };
 
   const chooseRandomMission = async () => {
-    const res = await fetch('/api/admin/random-mission', { credentials: 'include' });
+    const res = await apiFetch('/api/admin/random-mission');
     if (!res.ok) return toast.error('Não foi possível escolher uma missão');
     setMission(await res.json());
   };
@@ -246,15 +268,14 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       return;
     }
 
-    const res = await fetch(`/api/admin/users/${user.id}/role`, {
+    const res = await apiFetch(`/api/admin/users/${user.id}/role`, {
       method: 'PATCH',
-      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_admin: !user.is_admin }),
     });
 
     const data = await res.json().catch(() => null);
-    if (!res.ok) return toast.error(data?.erro || 'Não foi possível alterar a permissão');
+    if (!res.ok) return toast.error(data?.erro || data?.mensagem || 'Não foi possível alterar a permissão');
 
     setUsers(current => current.map(item =>
       item.id === user.id ? { ...item, is_admin: !item.is_admin } : item
@@ -278,18 +299,17 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       is_admin: userForm.is_admin,
     };
 
-    const res = await fetch(
+    const res = await apiFetch(
       isEditing ? `/api/admin/users/${editingUserId}` : '/api/admin/users',
       {
         method: isEditing ? 'PATCH' : 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       }
     );
 
     const data = await res.json().catch(() => null);
-    if (!res.ok) return toast.error(data?.erro || 'Não foi possível guardar o utilizador');
+    if (!res.ok) return toast.error(data?.erro || data?.mensagem || 'Não foi possível guardar o utilizador');
 
     if (isEditing) {
       setUsers(current => current.map(user => user.id === data.id ? data : user));
@@ -326,12 +346,11 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     }
     if (!window.confirm(`Apagar o utilizador "${user.nome}"?`)) return;
 
-    const res = await fetch(`/api/admin/users/${user.id}`, {
+    const res = await apiFetch(`/api/admin/users/${user.id}`, {
       method: 'DELETE',
-      credentials: 'include',
     });
     const data = await res.json().catch(() => null);
-    if (!res.ok) return toast.error(data?.erro || 'Não foi possível apagar o utilizador');
+    if (!res.ok) return toast.error(data?.erro || data?.mensagem || 'Não foi possível apagar o utilizador');
 
     setUsers(current => current.filter(item => item.id !== user.id));
     const removedPostsCount = posts.filter(post => post.user_id === user.id).length;
@@ -354,18 +373,17 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       imagem: postForm.imagem,
     };
 
-    const res = await fetch(
+    const res = await apiFetch(
       isEditing ? `/api/admin/posts/${editingPostId}` : '/api/admin/posts',
       {
         method: isEditing ? 'PATCH' : 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       }
     );
 
     const data = await res.json().catch(() => null);
-    if (!res.ok) return toast.error(data?.erro || 'Não foi possível guardar a publicação');
+    if (!res.ok) return toast.error(data?.erro || data?.mensagem || 'Não foi possível guardar a publicação');
 
     if (isEditing) {
       setPosts(current => current.map(post => post.id === data.id ? data : post));
@@ -393,12 +411,11 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const removePost = async (post: AdminPost) => {
     if (!window.confirm(`Apagar a publicação #${post.id}?`)) return;
 
-    const res = await fetch(`/api/admin/posts/${post.id}`, {
+    const res = await apiFetch(`/api/admin/posts/${post.id}`, {
       method: 'DELETE',
-      credentials: 'include',
     });
     const data = await res.json().catch(() => null);
-    if (!res.ok) return toast.error(data?.erro || 'Não foi possível apagar a publicação');
+    if (!res.ok) return toast.error(data?.erro || data?.mensagem || 'Não foi possível apagar a publicação');
 
     setPosts(current => current.filter(item => item.id !== post.id));
     setOverview(current => current ? { ...current, posts: Math.max(current.posts - 1, 0) } : current);
@@ -415,11 +432,10 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       icone: missionForm.icone,
     };
 
-    const res = await fetch(
+    const res = await apiFetch(
       isEditing ? `/api/admin/missions/${editingMissionId}` : '/api/admin/missions',
       {
         method: isEditing ? 'PATCH' : 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       }
@@ -455,12 +471,11 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const removeMission = async (item: AdminMission) => {
     if (!window.confirm(`Apagar a missão "${item.titulo}"?`)) return;
 
-    const res = await fetch(`/api/admin/missions/${item.id}`, {
+    const res = await apiFetch(`/api/admin/missions/${item.id}`, {
       method: 'DELETE',
-      credentials: 'include',
     });
     const data = await res.json().catch(() => null);
-    if (!res.ok) return toast.error(data?.erro || 'Não foi possível apagar a missão');
+    if (!res.ok) return toast.error(data?.erro || data?.mensagem || 'Não foi possível apagar a missão');
 
     setMissions(current => current.filter(missionItem => missionItem.id !== item.id));
     setOverview(current => current ? { ...current, missions: Math.max(current.missions - 1, 0) } : current);
