@@ -9,6 +9,7 @@ import { AIModal } from './components/AIModal';
 
 type Page = 'landing' | 'login' | 'app';
 type AuthUser = { user_id: number; email: string; nome?: string; is_admin?: boolean };
+type HistoryState = { page?: Page; registerMode?: boolean };
 
 const THEME_KEY = 'ecochat_theme';
 
@@ -24,6 +25,24 @@ export default function App() {
   });
   const [userId, setUserId] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const navigateTo = (nextPage: Page, options?: { replace?: boolean; registerMode?: boolean }) => {
+    const state: HistoryState = { page: nextPage };
+    if (nextPage === 'login') {
+      state.registerMode = Boolean(options?.registerMode);
+      setStartAsRegister(Boolean(options?.registerMode));
+    }
+
+    setPage(nextPage);
+
+    const url = nextPage === 'landing' ? '/' : `/${nextPage}`;
+    if (options?.replace) {
+      window.history.replaceState(state, '', url);
+      return;
+    }
+
+    window.history.pushState(state, '', url);
+  };
 
   useEffect(() => {
     localStorage.setItem(THEME_KEY, isDarkMode ? 'dark' : 'light');
@@ -53,13 +72,40 @@ export default function App() {
       } else {
         localStorage.removeItem('user_id');
       }
-      setPage('landing');
-      window.history.replaceState({ page: 'landing' }, '', '/');
+      navigateTo('landing', { replace: true });
       setIsSessionLoading(false);
     };
 
     restoreSession().catch(() => setIsSessionLoading(false));
   }, []);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const state = (event.state ?? {}) as HistoryState;
+      const pathname = window.location.pathname;
+
+      if (state.page === 'login' || pathname === '/login') {
+        setStartAsRegister(Boolean(state.registerMode));
+        setPage('login');
+        return;
+      }
+
+      if (state.page === 'app' || pathname === '/app') {
+        if (userId !== null) {
+          setPage('app');
+          if (!socket.connected) socket.connect();
+        } else {
+          setPage('landing');
+        }
+        return;
+      }
+
+      setPage('landing');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [userId]);
 
   useEffect(() => {
     if (page !== 'app') return;
@@ -81,28 +127,22 @@ export default function App() {
 
   const openLoginFlow = () => {
     if (userId !== null) {
-      setPage('app');
-      window.history.pushState({ page: 'app' }, '', '/app');
+      navigateTo('app');
       if (!socket.connected) socket.connect();
       return;
     }
 
-    setStartAsRegister(false);
-    setPage('login');
-    window.history.pushState({ page: 'login' }, '', '/login');
+    navigateTo('login', { registerMode: false });
   };
 
   const openSignupFlow = () => {
     if (userId !== null) {
-      setPage('app');
-      window.history.pushState({ page: 'app' }, '', '/app');
+      navigateTo('app');
       if (!socket.connected) socket.connect();
       return;
     }
 
-    setStartAsRegister(true);
-    setPage('login');
-    window.history.pushState({ page: 'login' }, '', '/login');
+    navigateTo('login', { registerMode: true });
   };
 
   const handleLogin = (userData: AuthUser) => {
@@ -111,8 +151,7 @@ export default function App() {
     localStorage.setItem('user_id', String(userData.user_id));
     localStorage.setItem('user_email', userData.email);
     if (userData.nome) localStorage.setItem('user_name', userData.nome);
-    setPage('app');
-    window.history.pushState({ page: 'app' }, '', '/app');
+    navigateTo('app');
 
     window.setTimeout(() => {
       if (!socket.connected) socket.connect();
@@ -131,8 +170,7 @@ export default function App() {
     localStorage.removeItem('user_id');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_name');
-    setPage('landing');
-    window.history.pushState({ page: 'landing' }, '', '/');
+    navigateTo('landing');
   };
 
   if (isSessionLoading) {
