@@ -58,11 +58,19 @@ Projeto-PAP-2023-26-PedroLyra/
 │   │   └── main.tsx
 │   ├── package.json
 │   └── vite.config.ts
-├── package.json
+├── run-ecochat.bat
 └── README.md
 ```
 
 ## Como executar
+
+### Arranque rapido no Windows
+
+```bat
+run-ecochat.bat
+```
+
+Esse ficheiro abre backend e frontend em duas janelas, mas com um unico comando a partir da raiz do projeto.
 
 ### Backend
 
