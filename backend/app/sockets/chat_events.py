@@ -23,15 +23,12 @@ def _get_session_user_id():
 @socketio.on('connect')
 def on_connect():
     user_id = _get_session_user_id()
-    print(f'[Socket] CONNECT tentativa — session user_id={user_id!r} | session keys={list(session.keys())}')
 
     if not user_id:
-        print('[Socket] ❌ Rejeitado — sem user_id na sessão (cookie não chegou?)')
         return False  # Rejeita a ligação
 
     room = f'user_{user_id}'
     join_room(room)
-    print(f'[Socket] ✅ Utilizador {user_id} conectado → room {room}')
 
     emit('connected', {'user_id': user_id, 'room': room})
 
@@ -99,5 +96,4 @@ def on_typing(data):
 
 @socketio.on('disconnect')
 def on_disconnect():
-    user_id = _get_session_user_id()
-    print(f'[Socket] Utilizador {user_id} desconectado')
+    _get_session_user_id()

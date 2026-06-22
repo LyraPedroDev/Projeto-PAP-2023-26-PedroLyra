@@ -136,14 +136,8 @@ export function PrivateChatSection({
     // Sincronizar estado imediatamente (socket pode já estar ligado)
     setSocketConnected(socket.connected);
 
-    const onConnect = () => {
-      console.log('[PrivateChat] socket conectado');
-      setSocketConnected(true);
-    };
-    const onDisconnect = () => {
-      console.log('[PrivateChat] socket desconectado');
-      setSocketConnected(false);
-    };
+    const onConnect = () => setSocketConnected(true);
+    const onDisconnect = () => setSocketConnected(false);
 
     const onNewMessage = (msg: PrivateMessage) => {
       const partnerId = activeFriend?.id;

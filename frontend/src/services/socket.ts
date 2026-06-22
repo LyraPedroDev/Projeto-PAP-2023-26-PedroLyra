@@ -19,16 +19,3 @@ export const socket = io(SOCKET_URL, {
   reconnectionAttempts: 10,
   reconnectionDelay: 2000,
 });
-
-// Logs de diagnóstico
-socket.on('connect', () => {
-  console.log('[Socket] ✅ Conectado — id:', socket.id);
-});
-
-socket.on('connect_error', (err) => {
-  console.error('[Socket] ❌ Erro:', err.message);
-});
-
-socket.on('disconnect', (reason) => {
-  console.warn('[Socket] ⚠️ Desconectado:', reason);
-});

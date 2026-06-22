@@ -24,7 +24,7 @@ class Config:
         origin.strip()
         for origin in os.environ.get(
             'ECOCHAT_ALLOWED_ORIGINS',
-            'http://localhost:3000,http://localhost:5000'
+            'http://localhost:3000,http://localhost:5000,http://localhost:5173'
         ).split(',')
         if origin.strip()
     ]
