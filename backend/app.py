@@ -14,7 +14,6 @@ if __name__ == '__main__':
     print("   - joao@email.com / 123456")
     print("   - ana@email.com / 123456")
     print("   - pedro@gmail.com / 123456")
-    print("\n📸 Sistema EcoReal ativado!")
     print("💬 Chat privado em tempo real ativado (Socket.IO)!")
     # host='localhost' para consistência com o frontend
     socketio.run(app, debug=os.environ.get('FLASK_DEBUG') == '1', host='localhost', port=5000,

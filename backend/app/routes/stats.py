@@ -13,7 +13,7 @@ def home():
         "rotas_disponiveis": [
             "/api/login", "/api/register", "/api/chat",
             "/api/status", "/api/friends/*", "/api/profile/<user_id>",
-            "/api/tasks/*", "/api/ranking", "/api/ecoreal/*",
+            "/api/tasks/*", "/api/ranking",
             "/api/feed/*", "/api/posts/*",
         ]
     })

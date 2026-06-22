@@ -4,7 +4,6 @@
 from .user import Usuario, UserStats
 from .friends import Amizade
 from .tasks import Tarefa, TarefaUsuario
-from .ecoreal import MissaoDiaria, FotoMissao
 from .social import Publicacao, Like, Comentario
 from .private_message import PrivateMessage
 

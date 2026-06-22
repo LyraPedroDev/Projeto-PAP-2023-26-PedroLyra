@@ -40,7 +40,6 @@ def create_app(config_class=Config) -> Flask:
     from .routes.tasks import tasks_bp
     from .routes.ranking import ranking_bp
     from .routes.profile import profile_bp
-    from .routes.ecoreal import ecoreal_bp
     from .routes.chat import chat_bp
     from .routes.stats import stats_bp
     from .routes.private_chat import private_chat_bp
@@ -52,7 +51,6 @@ def create_app(config_class=Config) -> Flask:
     app.register_blueprint(tasks_bp)
     app.register_blueprint(ranking_bp)
     app.register_blueprint(profile_bp)
-    app.register_blueprint(ecoreal_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(stats_bp)
     app.register_blueprint(private_chat_bp)
