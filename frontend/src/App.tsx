@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LandingPage } from './components/LandingPage';
 import { LoginPage } from './components/LoginPage';
 import { ChatPage } from './components/ChatPage';
 import { Toaster } from './components/ui/sonner';
@@ -6,7 +7,7 @@ import { socket } from './services/socket';
 import { AIFloatingButton } from './components/AIFloatingButton';
 import { AIModal } from './components/AIModal';
 
-type Page = 'login' | 'app';
+type Page = 'landing' | 'login' | 'app';
 type AuthUser = { user_id: number; email: string; nome?: string; is_admin?: boolean };
 
 const THEME_KEY = 'ecochat_theme';
@@ -14,7 +15,7 @@ const THEME_KEY = 'ecochat_theme';
 export default function App() {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [startAsRegister, setStartAsRegister] = useState(false);
-  const [page, setPage] = useState<Page>('login');
+  const [page, setPage] = useState<Page>('landing');
   const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem(THEME_KEY);
@@ -48,14 +49,12 @@ export default function App() {
         localStorage.setItem('user_id', String(user.id));
         localStorage.setItem('user_email', user.email);
         localStorage.setItem('user_name', user.nome);
-        setPage('app');
-        window.history.replaceState({ page: 'app' }, '', '/app');
         if (!socket.connected) socket.connect();
       } else {
         localStorage.removeItem('user_id');
-        setPage('login');
-        window.history.replaceState({ page: 'login' }, '', '/login');
       }
+      setPage('landing');
+      window.history.replaceState({ page: 'landing' }, '', '/');
       setIsSessionLoading(false);
     };
 
@@ -78,6 +77,32 @@ export default function App() {
 
   const handleToggleLoginMode = (isLoginNow: boolean) => {
     setStartAsRegister(!isLoginNow);
+  };
+
+  const openLoginFlow = () => {
+    if (userId !== null) {
+      setPage('app');
+      window.history.pushState({ page: 'app' }, '', '/app');
+      if (!socket.connected) socket.connect();
+      return;
+    }
+
+    setStartAsRegister(false);
+    setPage('login');
+    window.history.pushState({ page: 'login' }, '', '/login');
+  };
+
+  const openSignupFlow = () => {
+    if (userId !== null) {
+      setPage('app');
+      window.history.pushState({ page: 'app' }, '', '/app');
+      if (!socket.connected) socket.connect();
+      return;
+    }
+
+    setStartAsRegister(true);
+    setPage('login');
+    window.history.pushState({ page: 'login' }, '', '/login');
   };
 
   const handleLogin = (userData: AuthUser) => {
@@ -106,7 +131,8 @@ export default function App() {
     localStorage.removeItem('user_id');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_name');
-    window.history.pushState({ page: 'login' }, '', '/login');
+    setPage('landing');
+    window.history.pushState({ page: 'landing' }, '', '/');
   };
 
   if (isSessionLoading) {
@@ -115,6 +141,14 @@ export default function App() {
 
   return (
     <div className={isDarkMode ? 'dark' : ''}>
+      {page === 'landing' && (
+        <LandingPage
+          onLogin={openLoginFlow}
+          onSignup={openSignupFlow}
+          isDarkMode={isDarkMode}
+          toggleTheme={toggleTheme}
+        />
+      )}
       {page === 'login' && (
         <LoginPage
           onLogin={handleLogin}
