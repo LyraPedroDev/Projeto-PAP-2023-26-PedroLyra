@@ -59,7 +59,6 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
-node_modules
 
 # SQLite database files
 *.db
