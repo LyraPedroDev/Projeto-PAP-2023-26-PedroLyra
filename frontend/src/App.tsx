@@ -95,7 +95,7 @@ export default function App() {
           setPage('app');
           if (!socket.connected) socket.connect();
         } else {
-          setPage('landing');
+          navigateTo('landing', { replace: true });
         }
         return;
       }
@@ -106,6 +106,14 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [userId]);
+
+  useEffect(() => {
+    if (isSessionLoading) return;
+    if (page !== 'app') return;
+    if (userId !== null) return;
+
+    navigateTo('landing', { replace: true });
+  }, [isSessionLoading, page, userId]);
 
   useEffect(() => {
     if (page !== 'app') return;
