@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { BarChart3, Crown, Dice5, FileText, ShieldCheck, Sparkles, Users } from 'lucide-react';
+import { BarChart3, Crown, Dice5, FileText, Plus, ShieldCheck, Sparkles, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { theme } from '../theme';
 
@@ -25,60 +25,70 @@ interface AdminUser {
   pontos: number;
 }
 
-interface RandomMission {
+interface AdminPost {
+  id: number;
+  user_id: number;
+  autor_nome: string;
+  autor_email: string | null;
+  descricao: string;
+  categoria: string;
+  imagem: string | null;
+  criada_em: string | null;
+}
+
+interface AdminMission {
   id: number;
   titulo: string;
   descricao: string;
   pontos: number;
   categoria: string;
+  icone: string;
 }
+
+interface RandomMission extends AdminMission {}
+
+type AdminTab = 'users' | 'posts' | 'missions';
+
+const MISSION_CATEGORIES = ['daily', 'weekly', 'monthly'];
+const MISSION_ICONS = ['Leaf', 'Recycle', 'Droplet', 'Zap'];
 
 export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const T = theme(isDarkMode);
+  const [activeTab, setActiveTab] = useState<AdminTab>('users');
   const [overview, setOverview] = useState<Overview | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [posts, setPosts] = useState<AdminPost[]>([]);
+  const [missions, setMissions] = useState<AdminMission[]>([]);
   const [mission, setMission] = useState<RandomMission | null>(null);
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editingMissionId, setEditingMissionId] = useState<number | null>(null);
+
+  const [userForm, setUserForm] = useState({ nome: '', email: '', senha: '', is_admin: false });
+  const [postForm, setPostForm] = useState({ user_id: '', descricao: '', categoria: 'geral', imagem: '' });
+  const [missionForm, setMissionForm] = useState({ titulo: '', descricao: '', pontos: '10', categoria: 'daily', icone: 'Leaf' });
 
   const load = useCallback(async () => {
-    const [overviewRes, usersRes] = await Promise.all([
+    const [overviewRes, usersRes, postsRes, missionsRes] = await Promise.all([
       fetch('/api/admin/overview', { credentials: 'include' }),
       fetch('/api/admin/users', { credentials: 'include' }),
+      fetch('/api/admin/posts', { credentials: 'include' }),
+      fetch('/api/admin/missions', { credentials: 'include' }),
     ]);
-    if (!overviewRes.ok || !usersRes.ok) throw new Error();
+
+    if (!overviewRes.ok || !usersRes.ok || !postsRes.ok || !missionsRes.ok) {
+      throw new Error();
+    }
+
     setOverview(await overviewRes.json());
     setUsers(await usersRes.json());
+    setPosts(await postsRes.json());
+    setMissions(await missionsRes.json());
   }, []);
 
   useEffect(() => {
     load().catch(() => toast.error('Não foi possível carregar o painel administrativo'));
   }, [load]);
-
-  const toggleRole = async (user: AdminUser) => {
-    if (user.id === currentUserId) {
-      toast.info('Não podes remover a tua própria permissão nesta sessão.');
-      return;
-    }
-    const res = await fetch(`/api/admin/users/${user.id}/role`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ is_admin: !user.is_admin }),
-    });
-    if (!res.ok) return toast.error('Não foi possível alterar a permissão');
-    setUsers(current => current.map(item =>
-      item.id === user.id ? { ...item, is_admin: !item.is_admin } : item
-    ));
-    setOverview(current => current ? {
-      ...current,
-      admins: current.admins + (user.is_admin ? -1 : 1),
-    } : current);
-  };
-
-  const chooseRandomMission = async () => {
-    const res = await fetch('/api/admin/random-mission', { credentials: 'include' });
-    if (!res.ok) return toast.error('Não foi possível escolher uma missão');
-    setMission(await res.json());
-  };
 
   const stats = overview ? [
     { label: 'Utilizadores', value: overview.users, icon: Users, color: '#10b981' },
@@ -87,14 +97,314 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     { label: 'Missões', value: overview.missions, icon: BarChart3, color: '#f59e0b' },
   ] : [];
 
+  const tabButtonStyle = (tab: AdminTab) => ({
+    border: `1px solid ${activeTab === tab ? T.accentBorder : T.border}`,
+    background: activeTab === tab ? T.accentSub : T.bgSurface,
+    color: activeTab === tab ? T.accent : T.text,
+    borderRadius: 12,
+    padding: '10px 14px',
+    cursor: 'pointer',
+    fontWeight: 800,
+  });
+
+  const cardStyle = useMemo(() => ({
+    background: T.bgCard,
+    border: `1px solid ${T.border}`,
+    borderRadius: 20,
+    padding: 22,
+  }), [T]);
+
+  const inputStyle = {
+    width: '100%',
+    borderRadius: 12,
+    border: `1px solid ${T.border}`,
+    background: T.bgSurface,
+    color: T.text,
+    padding: '11px 13px',
+    outline: 'none',
+  } as const;
+
+  const textAreaStyle = {
+    ...inputStyle,
+    minHeight: 90,
+    resize: 'vertical' as const,
+  };
+
+  const smallButtonStyle = {
+    borderRadius: 10,
+    padding: '9px 12px',
+    cursor: 'pointer',
+    border: `1px solid ${T.border}`,
+    background: T.bgSurface,
+    color: T.text,
+    fontWeight: 700,
+  } as const;
+
+  const primaryButtonStyle = {
+    ...smallButtonStyle,
+    background: T.accent,
+    color: '#fff',
+    border: `1px solid ${T.accent}`,
+  };
+
+  const resetUserForm = () => {
+    setEditingUserId(null);
+    setUserForm({ nome: '', email: '', senha: '', is_admin: false });
+  };
+
+  const resetPostForm = () => {
+    setEditingPostId(null);
+    setPostForm({ user_id: '', descricao: '', categoria: 'geral', imagem: '' });
+  };
+
+  const resetMissionForm = () => {
+    setEditingMissionId(null);
+    setMissionForm({ titulo: '', descricao: '', pontos: '10', categoria: 'daily', icone: 'Leaf' });
+  };
+
+  const chooseRandomMission = async () => {
+    const res = await fetch('/api/admin/random-mission', { credentials: 'include' });
+    if (!res.ok) return toast.error('Não foi possível escolher uma missão');
+    setMission(await res.json());
+  };
+
+  const toggleRole = async (user: AdminUser) => {
+    if (user.id === currentUserId) {
+      toast.info('Não podes remover a tua própria permissão nesta sessão.');
+      return;
+    }
+
+    const res = await fetch(`/api/admin/users/${user.id}/role`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_admin: !user.is_admin }),
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return toast.error(data?.erro || 'Não foi possível alterar a permissão');
+
+    setUsers(current => current.map(item =>
+      item.id === user.id ? { ...item, is_admin: !item.is_admin } : item
+    ));
+    setOverview(current => current ? {
+      ...current,
+      admins: current.admins + (user.is_admin ? -1 : 1),
+    } : current);
+    toast.success('Permissão atualizada com sucesso');
+  };
+
+  const submitUser = async () => {
+    const isEditing = editingUserId !== null;
+    const previousUser = editingUserId !== null
+      ? users.find(user => user.id === editingUserId) || null
+      : null;
+    const payload = {
+      nome: userForm.nome,
+      email: userForm.email,
+      senha: userForm.senha,
+      is_admin: userForm.is_admin,
+    };
+
+    const res = await fetch(
+      isEditing ? `/api/admin/users/${editingUserId}` : '/api/admin/users',
+      {
+        method: isEditing ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return toast.error(data?.erro || 'Não foi possível guardar o utilizador');
+
+    if (isEditing) {
+      setUsers(current => current.map(user => user.id === data.id ? data : user));
+      if (previousUser && previousUser.is_admin !== data.is_admin) {
+        setOverview(current => current ? {
+          ...current,
+          admins: current.admins + (data.is_admin ? 1 : -1),
+        } : current);
+      }
+      toast.success('Utilizador atualizado com sucesso');
+    } else {
+      setUsers(current => [...current, data].sort((a, b) => a.id - b.id));
+      setOverview(current => current ? {
+        ...current,
+        users: current.users + 1,
+        admins: current.admins + (data.is_admin ? 1 : 0),
+      } : current);
+      toast.success('Utilizador criado com sucesso');
+    }
+
+    resetUserForm();
+  };
+
+  const editUser = (user: AdminUser) => {
+    setEditingUserId(user.id);
+    setUserForm({ nome: user.nome, email: user.email, senha: '', is_admin: user.is_admin });
+    setActiveTab('users');
+  };
+
+  const removeUser = async (user: AdminUser) => {
+    if (user.id === currentUserId) {
+      toast.info('Não podes apagar a tua própria conta por aqui.');
+      return;
+    }
+    if (!window.confirm(`Apagar o utilizador "${user.nome}"?`)) return;
+
+    const res = await fetch(`/api/admin/users/${user.id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return toast.error(data?.erro || 'Não foi possível apagar o utilizador');
+
+    setUsers(current => current.filter(item => item.id !== user.id));
+    const removedPostsCount = posts.filter(post => post.user_id === user.id).length;
+    setPosts(current => current.filter(post => post.user_id !== user.id));
+    setOverview(current => current ? {
+      ...current,
+      users: Math.max(current.users - 1, 0),
+      admins: Math.max(current.admins - (user.is_admin ? 1 : 0), 0),
+      posts: Math.max(current.posts - removedPostsCount, 0),
+    } : current);
+    toast.success('Utilizador apagado com sucesso');
+  };
+
+  const submitPost = async () => {
+    const isEditing = editingPostId !== null;
+    const payload = {
+      user_id: Number(postForm.user_id),
+      descricao: postForm.descricao,
+      categoria: postForm.categoria,
+      imagem: postForm.imagem,
+    };
+
+    const res = await fetch(
+      isEditing ? `/api/admin/posts/${editingPostId}` : '/api/admin/posts',
+      {
+        method: isEditing ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return toast.error(data?.erro || 'Não foi possível guardar a publicação');
+
+    if (isEditing) {
+      setPosts(current => current.map(post => post.id === data.id ? data : post));
+      toast.success('Publicação atualizada com sucesso');
+    } else {
+      setPosts(current => [data, ...current]);
+      setOverview(current => current ? { ...current, posts: current.posts + 1 } : current);
+      toast.success('Publicação criada com sucesso');
+    }
+
+    resetPostForm();
+  };
+
+  const editPost = (post: AdminPost) => {
+    setEditingPostId(post.id);
+    setPostForm({
+      user_id: String(post.user_id),
+      descricao: post.descricao,
+      categoria: post.categoria,
+      imagem: post.imagem || '',
+    });
+    setActiveTab('posts');
+  };
+
+  const removePost = async (post: AdminPost) => {
+    if (!window.confirm(`Apagar a publicação #${post.id}?`)) return;
+
+    const res = await fetch(`/api/admin/posts/${post.id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return toast.error(data?.erro || 'Não foi possível apagar a publicação');
+
+    setPosts(current => current.filter(item => item.id !== post.id));
+    setOverview(current => current ? { ...current, posts: Math.max(current.posts - 1, 0) } : current);
+    toast.success('Publicação apagada com sucesso');
+  };
+
+  const submitMission = async () => {
+    const isEditing = editingMissionId !== null;
+    const payload = {
+      titulo: missionForm.titulo,
+      descricao: missionForm.descricao,
+      pontos: Number(missionForm.pontos),
+      categoria: missionForm.categoria,
+      icone: missionForm.icone,
+    };
+
+    const res = await fetch(
+      isEditing ? `/api/admin/missions/${editingMissionId}` : '/api/admin/missions',
+      {
+        method: isEditing ? 'PATCH' : 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return toast.error(data?.erro || 'Não foi possível guardar a missão');
+
+    if (isEditing) {
+      setMissions(current => current.map(item => item.id === data.id ? data : item));
+      toast.success('Missão atualizada com sucesso');
+    } else {
+      setMissions(current => [...current, data].sort((a, b) => a.id - b.id));
+      setOverview(current => current ? { ...current, missions: current.missions + 1 } : current);
+      toast.success('Missão criada com sucesso');
+    }
+
+    resetMissionForm();
+  };
+
+  const editMission = (item: AdminMission) => {
+    setEditingMissionId(item.id);
+    setMissionForm({
+      titulo: item.titulo,
+      descricao: item.descricao,
+      pontos: String(item.pontos),
+      categoria: item.categoria,
+      icone: item.icone,
+    });
+    setActiveTab('missions');
+  };
+
+  const removeMission = async (item: AdminMission) => {
+    if (!window.confirm(`Apagar a missão "${item.titulo}"?`)) return;
+
+    const res = await fetch(`/api/admin/missions/${item.id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return toast.error(data?.erro || 'Não foi possível apagar a missão');
+
+    setMissions(current => current.filter(missionItem => missionItem.id !== item.id));
+    setOverview(current => current ? { ...current, missions: Math.max(current.missions - 1, 0) } : current);
+    toast.success('Missão apagada com sucesso');
+  };
+
   return (
-    <div style={{ maxWidth: 1050, margin: '0 auto', color: T.text }}>
+    <div style={{ maxWidth: 1150, margin: '0 auto', color: T.text }}>
       <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }}>
         <p style={{ color: T.accent, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em' }}>
           Administração
         </p>
         <h1 style={{ fontSize: 32, fontWeight: 900, margin: '5px 0 6px' }}>Painel EcoChat</h1>
-        <p style={{ color: T.textSub }}>Acompanha a comunidade e gere as permissões num único lugar.</p>
+        <p style={{ color: T.textSub }}>
+          Gere utilizadores, publicações e missões num único lugar.
+        </p>
       </motion.div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14, margin: '26px 0' }}>
@@ -114,10 +424,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
         ))}
       </div>
 
-      <motion.section
-        whileHover={{ y: -3 }}
-        style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 20, padding: 22, marginBottom: 18 }}
-      >
+      <motion.section whileHover={{ y: -3 }} style={{ ...cardStyle, marginBottom: 18 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <div>
             <h2 style={{ fontSize: 19, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -139,37 +446,169 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
             style={{ marginTop: 18, padding: 18, borderRadius: 14, background: T.accentSub, border: `1px solid ${T.accentBorder}` }}>
             <strong>{mission.titulo}</strong>
             <p style={{ color: T.textSub, fontSize: 13, marginTop: 5 }}>{mission.descricao}</p>
-            <span style={{ display: 'inline-block', marginTop: 9, color: T.accent, fontWeight: 800 }}>+{mission.pontos} pontos</span>
+            <span style={{ display: 'inline-block', marginTop: 9, color: T.accent, fontWeight: 800 }}>+{mission.pontos} pontos · {mission.categoria}</span>
           </motion.div>
         )}
       </motion.section>
 
-      <motion.section
-        whileHover={{ y: -3 }}
-        style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 20, padding: 22 }}
-      >
-        <h2 style={{ fontSize: 19, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-          <Crown size={20} color="#f59e0b" /> Utilizadores e permissões
-        </h2>
-        <div style={{ display: 'grid', gap: 9 }}>
-          {users.map(user => (
-            <motion.div key={user.id} whileHover={{ x: 3 }}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 13, border: `1px solid ${T.border}`, background: T.bgSurface }}>
-              <div style={{ width: 38, height: 38, borderRadius: 11, background: T.accentSub, color: T.accent, display: 'grid', placeItems: 'center', fontWeight: 900 }}>
-                {user.nome?.charAt(0).toUpperCase()}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontWeight: 750 }}>{user.nome}</p>
-                <p style={{ color: T.textMuted, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email} · {user.pontos} pts</p>
-              </div>
-              <button onClick={() => toggleRole(user)}
-                style={{ borderRadius: 10, padding: '8px 12px', cursor: 'pointer', border: `1px solid ${user.is_admin ? 'rgba(245,158,11,.35)' : T.border}`, background: user.is_admin ? 'rgba(245,158,11,.12)' : 'transparent', color: user.is_admin ? '#f59e0b' : T.textSub, fontWeight: 700, fontSize: 12 }}>
-                {user.is_admin ? 'Administrador' : 'Utilizador'}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
+        <button onClick={() => setActiveTab('users')} style={tabButtonStyle('users')}>Utilizadores</button>
+        <button onClick={() => setActiveTab('posts')} style={tabButtonStyle('posts')}>Publicações</button>
+        <button onClick={() => setActiveTab('missions')} style={tabButtonStyle('missions')}>Missões</button>
+      </div>
+
+      {activeTab === 'users' && (
+        <div style={{ display: 'grid', gap: 18 }}>
+          <section style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 19, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Crown size={20} color="#f59e0b" /> {editingUserId ? 'Editar utilizador' : 'Criar utilizador'}
+              </h2>
+              {editingUserId && <button onClick={resetUserForm} style={smallButtonStyle}>Cancelar edição</button>}
+            </div>
+            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
+              <input placeholder="Nome" value={userForm.nome} onChange={e => setUserForm(current => ({ ...current, nome: e.target.value }))} style={inputStyle} />
+              <input placeholder="Email" value={userForm.email} onChange={e => setUserForm(current => ({ ...current, email: e.target.value }))} style={inputStyle} />
+              <input placeholder={editingUserId ? 'Nova senha (opcional)' : 'Senha'} type="password" value={userForm.senha} onChange={e => setUserForm(current => ({ ...current, senha: e.target.value }))} style={inputStyle} />
+            </div>
+            <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 12, color: T.textSub }}>
+              <input type="checkbox" checked={userForm.is_admin} onChange={e => setUserForm(current => ({ ...current, is_admin: e.target.checked }))} />
+              Definir como administrador
+            </label>
+            <div style={{ marginTop: 14 }}>
+              <button onClick={submitUser} style={primaryButtonStyle}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingUserId ? 'Guardar alterações' : 'Criar utilizador'}</span>
               </button>
-            </motion.div>
-          ))}
+            </div>
+          </section>
+
+          <section style={cardStyle}>
+            <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Gestão de utilizadores</h2>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {users.map(user => (
+                <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 13, border: `1px solid ${T.border}`, background: T.bgSurface, flexWrap: 'wrap' }}>
+                  <div style={{ width: 38, height: 38, borderRadius: 11, background: T.accentSub, color: T.accent, display: 'grid', placeItems: 'center', fontWeight: 900 }}>
+                    {user.nome?.charAt(0).toUpperCase()}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 220 }}>
+                    <p style={{ fontWeight: 750 }}>{user.nome}</p>
+                    <p style={{ color: T.textMuted, fontSize: 12 }}>{user.email} · {user.pontos} pts</p>
+                  </div>
+                  <button onClick={() => toggleRole(user)}
+                    style={{ ...smallButtonStyle, border: `1px solid ${user.is_admin ? 'rgba(245,158,11,.35)' : T.border}`, color: user.is_admin ? '#f59e0b' : T.textSub }}>
+                    {user.is_admin ? 'Administrador' : 'Utilizador'}
+                  </button>
+                  <button onClick={() => editUser(user)} style={smallButtonStyle}>Editar</button>
+                  <button onClick={() => removeUser(user)} style={{ ...smallButtonStyle, color: '#ef4444' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Trash2 size={15} /> Apagar</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
-      </motion.section>
+      )}
+
+      {activeTab === 'posts' && (
+        <div style={{ display: 'grid', gap: 18 }}>
+          <section style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingPostId ? 'Editar publicação' : 'Criar publicação'}</h2>
+              {editingPostId && <button onClick={resetPostForm} style={smallButtonStyle}>Cancelar edição</button>}
+            </div>
+            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
+              <select value={postForm.user_id} onChange={e => setPostForm(current => ({ ...current, user_id: e.target.value }))} style={inputStyle}>
+                <option value="">Seleciona o autor</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>{user.nome} ({user.email})</option>
+                ))}
+              </select>
+              <input placeholder="Categoria" value={postForm.categoria} onChange={e => setPostForm(current => ({ ...current, categoria: e.target.value }))} style={inputStyle} />
+              <input placeholder="Nome da imagem (opcional)" value={postForm.imagem} onChange={e => setPostForm(current => ({ ...current, imagem: e.target.value }))} style={inputStyle} />
+            </div>
+            <textarea placeholder="Descrição da publicação" value={postForm.descricao} onChange={e => setPostForm(current => ({ ...current, descricao: e.target.value }))} style={{ ...textAreaStyle, marginTop: 12 }} />
+            <div style={{ marginTop: 14 }}>
+              <button onClick={submitPost} style={primaryButtonStyle}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingPostId ? 'Guardar alterações' : 'Criar publicação'}</span>
+              </button>
+            </div>
+          </section>
+
+          <section style={cardStyle}>
+            <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Gestão de publicações</h2>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {posts.map(post => (
+                <div key={post.id} style={{ padding: 16, borderRadius: 13, border: `1px solid ${T.border}`, background: T.bgSurface }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                    <div>
+                      <p style={{ fontWeight: 800 }}>#{post.id} · {post.autor_nome}</p>
+                      <p style={{ color: T.textMuted, fontSize: 12 }}>{post.autor_email} · {post.categoria}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button onClick={() => editPost(post)} style={smallButtonStyle}>Editar</button>
+                      <button onClick={() => removePost(post)} style={{ ...smallButtonStyle, color: '#ef4444' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Trash2 size={15} /> Apagar</span>
+                      </button>
+                    </div>
+                  </div>
+                  <p style={{ marginTop: 10, color: T.textSub }}>{post.descricao}</p>
+                  {post.imagem && <p style={{ marginTop: 8, fontSize: 12, color: T.textMuted }}>Imagem: {post.imagem}</p>}
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {activeTab === 'missions' && (
+        <div style={{ display: 'grid', gap: 18 }}>
+          <section style={cardStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 19, fontWeight: 800 }}>{editingMissionId ? 'Editar missão' : 'Criar missão'}</h2>
+              {editingMissionId && <button onClick={resetMissionForm} style={smallButtonStyle}>Cancelar edição</button>}
+            </div>
+            <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
+              <input placeholder="Título" value={missionForm.titulo} onChange={e => setMissionForm(current => ({ ...current, titulo: e.target.value }))} style={inputStyle} />
+              <input placeholder="Pontos" type="number" min={0} value={missionForm.pontos} onChange={e => setMissionForm(current => ({ ...current, pontos: e.target.value }))} style={inputStyle} />
+              <select value={missionForm.categoria} onChange={e => setMissionForm(current => ({ ...current, categoria: e.target.value }))} style={inputStyle}>
+                {MISSION_CATEGORIES.map(item => <option key={item} value={item}>{item}</option>)}
+              </select>
+              <select value={missionForm.icone} onChange={e => setMissionForm(current => ({ ...current, icone: e.target.value }))} style={inputStyle}>
+                {MISSION_ICONS.map(item => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </div>
+            <textarea placeholder="Descrição da missão" value={missionForm.descricao} onChange={e => setMissionForm(current => ({ ...current, descricao: e.target.value }))} style={{ ...textAreaStyle, marginTop: 12 }} />
+            <div style={{ marginTop: 14 }}>
+              <button onClick={submitMission} style={primaryButtonStyle}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Plus size={16} /> {editingMissionId ? 'Guardar alterações' : 'Criar missão'}</span>
+              </button>
+            </div>
+          </section>
+
+          <section style={cardStyle}>
+            <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Gestão de missões</h2>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {missions.map(item => (
+                <div key={item.id} style={{ padding: 16, borderRadius: 13, border: `1px solid ${T.border}`, background: T.bgSurface }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                    <div>
+                      <p style={{ fontWeight: 800 }}>{item.titulo}</p>
+                      <p style={{ color: T.textMuted, fontSize: 12 }}>{item.categoria} · {item.icone} · +{item.pontos} pontos</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button onClick={() => editMission(item)} style={smallButtonStyle}>Editar</button>
+                      <button onClick={() => removeMission(item)} style={{ ...smallButtonStyle, color: '#ef4444' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Trash2 size={15} /> Apagar</span>
+                      </button>
+                    </div>
+                  </div>
+                  <p style={{ marginTop: 10, color: T.textSub }}>{item.descricao}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
