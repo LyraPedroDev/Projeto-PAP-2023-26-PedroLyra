@@ -17,6 +17,12 @@ interface SidebarProps {
   isAdmin?: boolean;
 }
 
+interface SidebarProfile {
+  nivel: string;
+  streak: number;
+  pontos: number;
+}
+
 const MENU = [
   { id: 'feed' as Section,    icon: Newspaper,        label: 'Feed'      },
   { id: 'private' as Section, icon: MessageSquareDot, label: 'Mensagens' },
@@ -49,6 +55,11 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
   const [avatar, setAvatar] = useState(
     userId ? localStorage.getItem(`user_avatar_${userId}`) || '🌱' : '🌱'
   );
+  const [profile, setProfile] = useState<SidebarProfile>({
+    nivel: 'Eco Iniciante',
+    streak: 0,
+    pontos: 0,
+  });
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -59,6 +70,28 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const loadProfile = async () => {
+      try {
+        const response = await fetch(`/api/profile/${userId}`, { credentials: 'include' });
+        if (!response.ok) return;
+
+        const data = await response.json();
+        setProfile({
+          nivel: data.nivel || 'Eco Iniciante',
+          streak: data.streak ?? 0,
+          pontos: data.pontos ?? 0,
+        });
+      } catch {
+        // Mantém fallback silencioso para não poluir a navegação.
+      }
+    };
+
+    loadProfile();
+  }, [userId, activeSection]);
 
   return (
     <div style={{ width: 260, background: T.sidebarBg, borderRight: `1px solid ${T.sidebarBorder}`, display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: '"Inter","Segoe UI",system-ui,sans-serif', transition: 'background 0.3s' }}>
@@ -141,11 +174,11 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
             </div>
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: T.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{userName || 'Utilizador'}</p>
-              <p style={{ fontSize: 11, color: T.textMuted }}>Guardião Verde 🌿</p>
+              <p style={{ fontSize: 11, color: T.textMuted }}>{profile.nivel}</p>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            {[{ v: '🔥 5', l: 'sequência' }, { v: '⭐ 120', l: 'pts' }].map(s => (
+            {[{ v: `🔥 ${profile.streak}`, l: 'sequência' }, { v: `⭐ ${profile.pontos}`, l: 'pts' }].map(s => (
               <div key={s.l} style={{ flex: 1, background: T.accentSub, border: `1px solid ${T.accentBorder}`, borderRadius: 8, padding: '5px 8px', textAlign: 'center' }}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: T.text }}>{s.v}</p>
                 <p style={{ fontSize: 9, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{s.l}</p>

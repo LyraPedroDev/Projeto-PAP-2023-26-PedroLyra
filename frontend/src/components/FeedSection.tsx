@@ -50,6 +50,26 @@ interface FeedSectionProps {
   toggleTheme?: () => void;
 }
 
+interface TaskSummary {
+  id: number;
+  titulo: string;
+  pontos: number;
+  categoria: 'daily' | 'weekly' | 'monthly';
+  completada: boolean;
+}
+
+interface FeedProfile {
+  pontos: number;
+  streak: number;
+}
+
+interface RankingUser {
+  id: number;
+  nome: string;
+  pontos: number;
+  posicao: number;
+}
+
 // --- Categorias Ecológicas com Cores HSL Vibrantes ---
 const CATS = [
   { id: 'geral', label: 'Geral', emoji: '🌍', color: '#10b981' },
@@ -538,7 +558,7 @@ function PostCard({
 }
 
 // --- Painel Direito (Widgets & Rankings) ---
-function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: number }) {
+function RightPanel({ isDarkMode, width = 280, userId }: { isDarkMode: boolean; width?: number; userId: number }) {
   const T = theme(isDarkMode);
   
   const tips = [
@@ -550,18 +570,62 @@ function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: 
   ];
   const tip = tips[new Date().getDay() % tips.length];
 
-  const top5 = [
-    { name: 'Ana Silva', pts: 980, emoji: '🥇' }, 
-    { name: 'João Costa', pts: 860, emoji: '🥈' },
-    { name: 'Maria Lopes', pts: 720, emoji: '🥉' }, 
-    { name: 'Rui Santos', pts: 610, emoji: '4️⃣' },
-    { name: 'João Santos', pts: 540, emoji: '5️⃣' },
-  ];
+  const [profile, setProfile] = useState<FeedProfile>({ pontos: 0, streak: 0 });
+  const [ranking, setRanking] = useState<RankingUser[]>([]);
+  const [featuredTask, setFeaturedTask] = useState<TaskSummary | null>(null);
+  const [completedInCategory, setCompletedInCategory] = useState(0);
+  const [totalInCategory, setTotalInCategory] = useState(0);
+
+  useEffect(() => {
+    const loadPanelData = async () => {
+      try {
+        const [profileRes, rankingRes, tasksRes] = await Promise.all([
+          fetch(`/api/profile/${userId}`, { credentials: 'include' }),
+          fetch('/api/ranking', { credentials: 'include' }),
+          fetch(`/api/tasks/user/${userId}`, { credentials: 'include' }),
+        ]);
+
+        if (profileRes.ok) {
+          const data = await profileRes.json();
+          setProfile({
+            pontos: data.pontos ?? 0,
+            streak: data.streak ?? 0,
+          });
+        }
+
+        if (rankingRes.ok) {
+          const data = await rankingRes.json();
+          setRanking(Array.isArray(data) ? data.slice(0, 5) : []);
+        }
+
+        if (tasksRes.ok) {
+          const data: TaskSummary[] = await tasksRes.json();
+          const nextTask = data.find(task => !task.completada) ?? data[0] ?? null;
+          setFeaturedTask(nextTask);
+
+          if (nextTask) {
+            const sameCategory = data.filter(task => task.categoria === nextTask.categoria);
+            setCompletedInCategory(sameCategory.filter(task => task.completada).length);
+            setTotalInCategory(sameCategory.length);
+          } else {
+            setCompletedInCategory(0);
+            setTotalInCategory(0);
+          }
+        }
+      } catch {
+        // Mantém o painel funcional com fallbacks silenciosos.
+      }
+    };
+
+    loadPanelData();
+  }, [userId]);
 
   const blockStyle = { 
     background: T.bgCard, border: `1px solid ${T.border}`, 
     borderRadius: 16, padding: '18px 20px', marginBottom: 14 
   };
+  const progress = totalInCategory > 0 ? Math.round((completedInCategory / totalInCategory) * 100) : 0;
+  const rankingEmoji = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
 
   return (
     <motion.div 
@@ -581,29 +645,35 @@ function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: 
             width: 42, height: 42, borderRadius: 12, background: T.accentSub, 
             border: `1px solid ${T.accentBorder}`, display: 'flex', 
             alignItems: 'center', justifyContent: 'center', fontSize: 20 
-          }}>♻️</div>
+          }}>{featuredTask?.categoria === 'weekly' ? '📅' : featuredTask?.categoria === 'monthly' ? '🗓️' : '☀️'}</div>
           <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: T.text }}>Recicla 3 itens hoje</p>
-            <p style={{ fontSize: 11, color: T.textMuted }}>+30 pontos</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: T.text }}>
+              {featuredTask?.titulo || 'Nenhuma missão disponível'}
+            </p>
+            <p style={{ fontSize: 11, color: T.textMuted }}>
+              {featuredTask ? `+${featuredTask.pontos} pontos` : 'Volta mais tarde para novas missões'}
+            </p>
           </div>
         </div>
         <div style={{ marginTop: 12, height: 5, background: T.border, borderRadius: 10, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: '33%', background: 'linear-gradient(90deg,#10b981,#34d399)', borderRadius: 10 }} />
+          <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg,#10b981,#34d399)', borderRadius: 10 }} />
         </div>
-        <p style={{ fontSize: 10, color: T.textMuted, marginTop: 5 }}>1 de 3 completo</p>
+        <p style={{ fontSize: 10, color: T.textMuted, marginTop: 5 }}>
+          {totalInCategory > 0 ? `${completedInCategory} de ${totalInCategory} concluídas nesta categoria` : 'Sem progresso disponível'}
+        </p>
       </motion.div>
 
       {/* Widget 2: Streak e Pontos */}
       <motion.div variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }} style={{ ...blockStyle, display: 'flex', gap: 10 }}>
         <div style={{ flex: 1, textAlign: 'center' }}>
           <Flame size={22} style={{ color: '#f97316', margin: '0 auto 6px' }} />
-          <p style={{ fontSize: 22, fontWeight: 900, color: T.text }}>5</p>
+          <p style={{ fontSize: 22, fontWeight: 900, color: T.text }}>{profile.streak}</p>
           <p style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Sequência</p>
         </div>
         <div style={{ width: 1, background: T.border }} />
         <div style={{ flex: 1, textAlign: 'center' }}>
           <Zap size={22} style={{ color: T.accent, margin: '0 auto 6px' }} />
-          <p style={{ fontSize: 22, fontWeight: 900, color: T.text }}>145</p>
+          <p style={{ fontSize: 22, fontWeight: 900, color: T.text }}>{profile.pontos}</p>
           <p style={{ fontSize: 10, color: T.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Pontos</p>
         </div>
       </motion.div>
@@ -614,13 +684,15 @@ function RightPanel({ isDarkMode, width = 280 }: { isDarkMode: boolean; width?: 
           <Trophy size={15} style={{ color: '#f59e0b' }} />
           <p style={{ fontSize: 10, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700 }}>Top Comunidade</p>
         </div>
-        {top5.map((u, i) => (
-          <motion.div whileHover={{ scale: 1.02 }} key={u.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < 4 ? `1px solid ${T.border}` : 'none', cursor: 'pointer' }}>
-            <span style={{ fontSize: 14 }}>{u.emoji}</span>
-            <p style={{ flex: 1, fontSize: 13, fontWeight: 600, color: i === 0 ? '#fbbf24' : T.textSub, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name}</p>
-            <p style={{ fontSize: 12, fontWeight: 700, color: T.accent }}>{u.pts}</p>
+        {ranking.length > 0 ? ranking.map((u, i) => (
+          <motion.div whileHover={{ scale: 1.02 }} key={u.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < ranking.length - 1 ? `1px solid ${T.border}` : 'none', cursor: 'pointer' }}>
+            <span style={{ fontSize: 14 }}>{rankingEmoji[i] || `#${u.posicao}`}</span>
+            <p style={{ flex: 1, fontSize: 13, fontWeight: 600, color: i === 0 ? '#fbbf24' : T.textSub, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.nome}</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: T.accent }}>{u.pontos}</p>
           </motion.div>
-        ))}
+        )) : (
+          <p style={{ fontSize: 13, color: T.textMuted }}>O ranking da comunidade ainda não está disponível.</p>
+        )}
       </motion.div>
 
       {/* Widget 4: Dica Ecológica */}
@@ -1141,7 +1213,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
 
       {/* Widgets / RightPanel (Escondido em Mobile e Responsivo) */}
       {!isMobile && (
-        <RightPanel isDarkMode={isDarkMode} width={isTablet ? 240 : 280} />
+        <RightPanel isDarkMode={isDarkMode} width={isTablet ? 240 : 280} userId={userId} />
       )}
 
       {/* Estilos CSS Auxiliares */}
