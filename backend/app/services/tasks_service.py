@@ -2,20 +2,61 @@ from ..models.tasks import Tarefa, TarefaUsuario
 from ..models.user import UserStats
 from ..extensions import db
 from .gamification_service import adicionar_pontos, atualizar_streak, calcular_nivel
+from datetime import datetime, timedelta
+
+
+def _periodo_atual(categoria: str) -> tuple[datetime, datetime] | None:
+    agora = datetime.now()
+
+    if categoria == "daily":
+        inicio = agora.replace(hour=0, minute=0, second=0, microsecond=0)
+        fim = inicio + timedelta(days=1)
+        return inicio, fim
+
+    if categoria == "weekly":
+        inicio = agora.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=agora.weekday())
+        fim = inicio + timedelta(days=7)
+        return inicio, fim
+
+    if categoria == "monthly":
+        inicio = agora.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if inicio.month == 12:
+            proximo_mes = inicio.replace(year=inicio.year + 1, month=1)
+        else:
+            proximo_mes = inicio.replace(month=inicio.month + 1)
+        fim = proximo_mes.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        return inicio, fim
+
+    return None
+
+
+def _query_conclusao_periodo(user_id: int, tarefa_id: int, categoria: str):
+    query = TarefaUsuario.query.filter_by(user_id=user_id, tarefa_id=tarefa_id)
+    periodo = _periodo_atual(categoria)
+
+    if periodo is None:
+        return query
+
+    inicio, fim_exclusivo = periodo
+    return query.filter(
+        TarefaUsuario.completada_em >= inicio,
+        TarefaUsuario.completada_em < fim_exclusivo
+    )
 
 
 def get_user_tasks(user_id: int) -> list:
     todas_tarefas = Tarefa.query.all()
-    completadas_ids = {tc.tarefa_id for tc in TarefaUsuario.query.filter_by(user_id=user_id).all()}
 
-    return [
-        {
+    tarefas = []
+    for t in todas_tarefas:
+        concluida_no_periodo = _query_conclusao_periodo(user_id, t.id, t.categoria).first() is not None
+        tarefas.append({
             "id": t.id, "titulo": t.titulo, "descricao": t.descricao,
             "pontos": t.pontos, "categoria": t.categoria, "icone": t.icone,
-            "completada": t.id in completadas_ids,
-        }
-        for t in todas_tarefas
-    ]
+            "completada": concluida_no_periodo,
+        })
+
+    return tarefas
 
 
 def completar_tarefa(user_id: int, tarefa_id: int):
@@ -23,7 +64,7 @@ def completar_tarefa(user_id: int, tarefa_id: int):
     if not tarefa:
         return None, "Tarefa não encontrada"
 
-    if TarefaUsuario.query.filter_by(user_id=user_id, tarefa_id=tarefa_id).first():
+    if _query_conclusao_periodo(user_id, tarefa_id, tarefa.categoria).first():
         return None, "Tarefa já foi completada"
 
     db.session.add(TarefaUsuario(user_id=user_id, tarefa_id=tarefa_id))
@@ -49,11 +90,18 @@ def completar_tarefa(user_id: int, tarefa_id: int):
 
 
 def desmarcar_tarefa(user_id: int, tarefa_id: int):
-    tarefa_usuario = TarefaUsuario.query.filter_by(user_id=user_id, tarefa_id=tarefa_id).first()
+    tarefa = Tarefa.query.get(tarefa_id)
+    if not tarefa:
+        return None, "Tarefa não encontrada"
+
+    tarefa_usuario = (
+        _query_conclusao_periodo(user_id, tarefa_id, tarefa.categoria)
+        .order_by(TarefaUsuario.completada_em.desc())
+        .first()
+    )
     if not tarefa_usuario:
         return None, "Tarefa não estava completada"
 
-    tarefa = Tarefa.query.get(tarefa_id)
     db.session.delete(tarefa_usuario)
 
     stats = UserStats.query.filter_by(user_id=user_id).first()
