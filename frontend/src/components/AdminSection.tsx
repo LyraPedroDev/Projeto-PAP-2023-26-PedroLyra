@@ -72,6 +72,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const [posts, setPosts] = useState<AdminPost[]>([]);
   const [missions, setMissions] = useState<AdminMission[]>([]);
   const [mission, setMission] = useState<RandomMission | null>(null);
+  const [postFilterUserId, setPostFilterUserId] = useState('todos');
   const [editingUserId, setEditingUserId] = useState<number | null>(null);
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editingMissionId, setEditingMissionId] = useState<number | null>(null);
@@ -81,21 +82,34 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const [missionForm, setMissionForm] = useState({ titulo: '', descricao: '', pontos: '10', categoria: 'daily', icone: 'Leaf' });
 
   const load = useCallback(async () => {
-    const [overviewRes, usersRes, postsRes, missionsRes] = await Promise.all([
-      fetch('/api/admin/overview', { credentials: 'include' }),
-      fetch('/api/admin/users', { credentials: 'include' }),
-      fetch('/api/admin/posts', { credentials: 'include' }),
-      fetch('/api/admin/missions', { credentials: 'include' }),
+    const loadJson = async <T,>(url: string): Promise<T> => {
+      const response = await fetch(url, { credentials: 'include' });
+      if (!response.ok) {
+        throw new Error(url);
+      }
+      return response.json();
+    };
+
+    const [overviewResult, usersResult, postsResult, missionsResult] = await Promise.allSettled([
+      loadJson<Overview>('/api/admin/overview'),
+      loadJson<AdminUser[]>('/api/admin/users'),
+      loadJson<AdminPost[]>('/api/admin/posts'),
+      loadJson<AdminMission[]>('/api/admin/missions'),
     ]);
 
-    if (!overviewRes.ok || !usersRes.ok || !postsRes.ok || !missionsRes.ok) {
+    if (overviewResult.status === 'fulfilled') setOverview(overviewResult.value);
+    if (usersResult.status === 'fulfilled') setUsers(usersResult.value);
+    if (postsResult.status === 'fulfilled') setPosts(postsResult.value);
+    if (missionsResult.status === 'fulfilled') setMissions(missionsResult.value);
+
+    if (
+      overviewResult.status === 'rejected' &&
+      usersResult.status === 'rejected' &&
+      postsResult.status === 'rejected' &&
+      missionsResult.status === 'rejected'
+    ) {
       throw new Error();
     }
-
-    setOverview(await overviewRes.json());
-    setUsers(await usersRes.json());
-    setPosts(await postsRes.json());
-    setMissions(await missionsRes.json());
   }, []);
 
   useEffect(() => {
@@ -111,6 +125,9 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
 
   const getCategoryLabel = (value: string) => CATEGORY_LABELS[value] || value;
   const getIconLabel = (value: string) => ICON_LABELS[value] || value;
+  const filteredPosts = postFilterUserId === 'todos'
+    ? posts
+    : posts.filter(post => String(post.user_id) === postFilterUserId);
 
   const tabButtonStyle = (tab: AdminTab) => ({
     border: `1px solid ${activeTab === tab ? T.accentBorder : T.border}`,
@@ -467,9 +484,22 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       </motion.section>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
-        <button onClick={() => setActiveTab('users')} style={tabButtonStyle('users')}>Utilizadores</button>
-        <button onClick={() => setActiveTab('posts')} style={tabButtonStyle('posts')}>Publicações</button>
-        <button onClick={() => setActiveTab('missions')} style={tabButtonStyle('missions')}>Missões</button>
+        {([
+          { id: 'users', label: 'Utilizadores' },
+          { id: 'posts', label: 'Publicações' },
+          { id: 'missions', label: 'Missões' },
+        ] as const).map(tab => (
+          <motion.button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            whileHover={{ y: -2, scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.15 }}
+            style={{ ...tabButtonStyle(tab.id), transition: 'all 0.2s ease', boxShadow: activeTab === tab.id ? `0 0 0 1px ${T.accentBorder}, 0 8px 20px rgba(16,185,129,0.12)` : 'none' }}
+          >
+            {tab.label}
+          </motion.button>
+        ))}
       </div>
 
       {activeTab === 'users' && (
@@ -502,11 +532,15 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
               <div style={{ border: `1px solid ${T.border}`, borderRadius: 16, background: T.bgSurface, padding: 16 }}>
                 <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>Utilizadores já existentes</h3>
                 <div style={{ display: 'grid', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
-                  {users.map(user => (
-                    <div key={user.id} style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard }}>
+                  {users.length === 0 ? (
+                    <p style={{ color: T.textMuted, fontSize: 13 }}>Nenhum utilizador encontrado.</p>
+                  ) : users.map(user => (
+                    <motion.div key={user.id} whileHover={{ x: 4, scale: 1.01 }}
+                      style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard, cursor: 'pointer' }}
+                      onClick={() => editUser(user)}>
                       <p style={{ fontWeight: 700 }}>{user.nome}</p>
                       <p style={{ color: T.textMuted, fontSize: 12 }}>{user.email}</p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -516,7 +550,9 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
           <section style={cardStyle}>
             <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Gestão de utilizadores</h2>
             <div style={{ display: 'grid', gap: 10 }}>
-              {users.map(user => (
+              {users.length === 0 ? (
+                <p style={{ color: T.textMuted, fontSize: 13 }}>Ainda não existem utilizadores para gerir.</p>
+              ) : users.map(user => (
                 <div key={user.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 13, border: `1px solid ${T.border}`, background: T.bgSurface, flexWrap: 'wrap' }}>
                   <div style={{ width: 38, height: 38, borderRadius: 11, background: T.accentSub, color: T.accent, display: 'grid', placeItems: 'center', fontWeight: 900 }}>
                     {user.nome?.charAt(0).toUpperCase()}
@@ -559,6 +595,16 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
                   <input placeholder="Categoria" value={postForm.categoria} onChange={e => setPostForm(current => ({ ...current, categoria: e.target.value }))} style={inputStyle} />
                   <input placeholder="Nome da imagem (opcional)" value={postForm.imagem} onChange={e => setPostForm(current => ({ ...current, imagem: e.target.value }))} style={inputStyle} />
                 </div>
+                <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'minmax(220px,1fr)', marginTop: 12 }}>
+                  <select value={postFilterUserId} onChange={e => setPostFilterUserId(e.target.value)} style={inputStyle}>
+                    <option value="todos">Filtrar publicações: todos os utilizadores</option>
+                    {users.map(user => (
+                      <option key={user.id} value={String(user.id)}>
+                        {user.nome} ({user.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <textarea placeholder="Descrição da publicação" value={postForm.descricao} onChange={e => setPostForm(current => ({ ...current, descricao: e.target.value }))} style={{ ...textAreaStyle, marginTop: 12 }} />
                 <div style={{ marginTop: 14 }}>
                   <button onClick={submitPost} style={primaryButtonStyle}>
@@ -568,13 +614,22 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
               </div>
 
               <div style={{ border: `1px solid ${T.border}`, borderRadius: 16, background: T.bgSurface, padding: 16 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>Publicações já existentes</h3>
+                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>
+                  Publicações já existentes {postFilterUserId !== 'todos' && '(filtradas)'}
+                </h3>
                 <div style={{ display: 'grid', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
-                  {posts.map(post => (
-                    <div key={post.id} style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard }}>
+                  {filteredPosts.length === 0 ? (
+                    <p style={{ color: T.textMuted, fontSize: 13 }}>
+                      {posts.length === 0 ? 'Nenhuma publicação encontrada.' : 'Nenhuma publicação encontrada para este utilizador.'}
+                    </p>
+                  ) : filteredPosts.map(post => (
+                    <motion.div key={post.id} whileHover={{ x: 4, scale: 1.01 }}
+                      style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard, cursor: 'pointer' }}
+                      onClick={() => editPost(post)}>
                       <p style={{ fontWeight: 700 }}>#{post.id} · {post.autor_nome}</p>
+                      <p style={{ color: T.textMuted, fontSize: 11 }}>{post.autor_email}</p>
                       <p style={{ color: T.textMuted, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{post.descricao}</p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -584,7 +639,11 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
           <section style={cardStyle}>
             <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Gestão de publicações</h2>
             <div style={{ display: 'grid', gap: 10 }}>
-              {posts.map(post => (
+              {filteredPosts.length === 0 ? (
+                <p style={{ color: T.textMuted, fontSize: 13 }}>
+                  {posts.length === 0 ? 'Ainda não existem publicações para gerir.' : 'Nenhuma publicação encontrada para o filtro selecionado.'}
+                </p>
+              ) : filteredPosts.map(post => (
                 <div key={post.id} style={{ padding: 16, borderRadius: 13, border: `1px solid ${T.border}`, background: T.bgSurface }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div>
@@ -637,11 +696,15 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
               <div style={{ border: `1px solid ${T.border}`, borderRadius: 16, background: T.bgSurface, padding: 16 }}>
                 <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>Missões já existentes</h3>
                 <div style={{ display: 'grid', gap: 8, maxHeight: 280, overflowY: 'auto' }}>
-                  {missions.map(item => (
-                    <div key={item.id} style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard }}>
+                  {missions.length === 0 ? (
+                    <p style={{ color: T.textMuted, fontSize: 13 }}>Nenhuma missão encontrada.</p>
+                  ) : missions.map(item => (
+                    <motion.div key={item.id} whileHover={{ x: 4, scale: 1.01 }}
+                      style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${T.border}`, background: T.bgCard, cursor: 'pointer' }}
+                      onClick={() => editMission(item)}>
                       <p style={{ fontWeight: 700 }}>{item.titulo}</p>
                       <p style={{ color: T.textMuted, fontSize: 12 }}>{getCategoryLabel(item.categoria)} · +{item.pontos} pontos</p>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
@@ -651,7 +714,9 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
           <section style={cardStyle}>
             <h2 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16 }}>Gestão de missões</h2>
             <div style={{ display: 'grid', gap: 10 }}>
-              {missions.map(item => (
+              {missions.length === 0 ? (
+                <p style={{ color: T.textMuted, fontSize: 13 }}>Ainda não existem missões para gerir.</p>
+              ) : missions.map(item => (
                 <div key={item.id} style={{ padding: 16, borderRadius: 13, border: `1px solid ${T.border}`, background: T.bgSurface }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div>
