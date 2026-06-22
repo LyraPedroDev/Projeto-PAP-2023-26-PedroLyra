@@ -64,7 +64,7 @@ export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId, isAdmin }:
     switch (activeSection) {
       case 'feed':    return <FeedSection userId={userId} {...commonProps} />;
       case 'ranking': return <RankingSection userId={userId} />;
-      case 'tasks':   return <TasksSection userId={userId} />;
+      case 'tasks':   return <TasksSection userId={userId} isDarkMode={isDarkMode} />;
       case 'friends': return (
         <FriendsSection
           userId={userId}
