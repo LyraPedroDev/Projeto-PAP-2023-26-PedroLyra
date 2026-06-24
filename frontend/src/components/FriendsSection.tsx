@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
+import { theme } from "../theme";
 
 interface Friend {
   id: number;
@@ -25,6 +26,8 @@ interface FriendsSectionProps {
 }
 
 export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
+  const isDarkMode = document.documentElement.classList.contains('dark');
+  const T = theme(isDarkMode);
   const [searchTerm, setSearchTerm] = useState("");
   const [friends, setFriends] = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
@@ -197,14 +200,27 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       <motion.div 
         initial={{ opacity: 0, y: -20 }} 
         animate={{ opacity: 1, y: 0 }} 
-        className="flex items-center gap-4 rounded-3xl border border-green-100 bg-gradient-to-r from-green-50 to-emerald-50 p-6 shadow-sm dark:border-green-900/40 dark:bg-gradient-to-r dark:from-green-950/30 dark:to-emerald-950/20"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          padding: 24,
+          borderRadius: 24,
+          border: `1px solid ${isDarkMode ? 'rgba(16,185,129,0.18)' : 'rgba(16,185,129,0.12)'}`,
+          background: isDarkMode
+            ? 'linear-gradient(135deg, rgba(6,14,8,0.95), rgba(10,30,18,0.92))'
+            : 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+          boxShadow: isDarkMode
+            ? '0 12px 32px rgba(0,0,0,0.22)'
+            : '0 10px 30px rgba(15,23,42,0.05)',
+        }}
       >
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg shadow-green-500/20">
           <Users size={28} />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-green-900 dark:text-green-300">Comunidade e Amigos</h1>
-          <p className="text-sm text-green-700/80 dark:text-green-200/70">Adicione contactos, aceite convites e mantenha a sua rede sustentável organizada.</p>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: isDarkMode ? '#86efac' : '#0f172a' }}>Comunidade e Amigos</h1>
+          <p style={{ fontSize: 14, marginTop: 4, color: isDarkMode ? 'rgba(255,255,255,0.70)' : '#475569' }}>Adicione contactos, aceite convites e mantenha a sua rede sustentável organizada.</p>
         </div>
       </motion.div>
 
