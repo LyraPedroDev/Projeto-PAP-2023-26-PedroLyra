@@ -139,8 +139,8 @@ def deletar_post(user_id: int, post_id: int) -> bool:
             filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], post.imagem)
             if os.path.exists(filepath):
                 os.remove(filepath)
-        except Exception as e:
-            print(f"[Backup-Log] Falha ao excluir imagem física: {e}")
+        except Exception:
+            pass
 
     # 2. Deletar likes associados
     Like.query.filter_by(publicacao_id=post_id).delete()

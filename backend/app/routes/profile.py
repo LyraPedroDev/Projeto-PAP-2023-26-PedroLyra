@@ -5,9 +5,10 @@ from ..auth_tokens import current_user, login_required
 profile_bp = Blueprint('profile', __name__)
 
 
+@profile_bp.route('/api/profile/me', methods=['GET'])
 @profile_bp.route('/api/profile/<int:user_id>', methods=['GET'])
 @login_required
-def get_profile_route(user_id):
+def get_profile_route(user_id=None):
     profile, erro = get_profile(current_user().id)
     if erro:
         return jsonify({"erro": erro}), 404

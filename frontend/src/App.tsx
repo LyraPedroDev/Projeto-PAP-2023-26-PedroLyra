@@ -4,6 +4,7 @@ import { LoginPage } from './components/LoginPage';
 import { ChatPage } from './components/ChatPage';
 import { Toaster } from './components/ui/sonner';
 import { socket } from './services/socket';
+import { apiFetch } from './services/api';
 import { AIFloatingButton } from './components/AIFloatingButton';
 import { AIModal } from './components/AIModal';
 
@@ -51,14 +52,7 @@ export default function App() {
 
   useEffect(() => {
     const restoreSession = async () => {
-      let res = await fetch('/api/auth/me', { credentials: 'include' });
-      if (res.status === 401) {
-        const refresh = await fetch('/api/auth/refresh', {
-          method: 'POST',
-          credentials: 'include',
-        });
-        if (refresh.ok) res = refresh;
-      }
+      const res = await apiFetch('/api/auth/me');
 
       if (res.ok) {
         const data = await res.json();
@@ -118,9 +112,8 @@ export default function App() {
   useEffect(() => {
     if (page !== 'app') return;
     const timer = window.setInterval(async () => {
-      const res = await fetch('/api/auth/refresh', {
+      const res = await apiFetch('/api/auth/refresh', {
         method: 'POST',
-        credentials: 'include',
       });
       if (!res.ok) void handleLogout();
     }, 10 * 60 * 1000);
@@ -167,9 +160,8 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', {
+    await apiFetch('/api/auth/logout', {
       method: 'POST',
-      credentials: 'include',
     }).catch(() => {});
     if (socket.connected) socket.disconnect();
     setPage('login');

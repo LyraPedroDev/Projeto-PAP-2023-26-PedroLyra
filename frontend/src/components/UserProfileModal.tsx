@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Award, Shield, Flame, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { apiFetch } from '../services/api';
 
 interface RankingUser {
   id: number;
@@ -39,10 +40,10 @@ export function UserProfileModal({ isOpen, onClose, user, currentUserId }: UserP
   const handleAddFriend = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('/api/friends/add', {
+      const res = await apiFetch('/api/friends/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: currentUserId, alvo: user.id }),
+        body: JSON.stringify({ alvo: user.id }),
       });
       const data = await res.json();
       if (res.ok && data.sucesso) {
@@ -52,8 +53,7 @@ export function UserProfileModal({ isOpen, onClose, user, currentUserId }: UserP
       } else {
         toast.error(data.erro || 'Erro ao enviar convite');
       }
-    } catch (error) {
-      console.error('Erro ao adicionar amigo:', error);
+    } catch {
       toast.error('Erro ao conectar ao servidor');
     } finally {
       setIsLoading(false);

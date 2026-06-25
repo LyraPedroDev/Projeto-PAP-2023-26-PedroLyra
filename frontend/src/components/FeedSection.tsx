@@ -206,7 +206,7 @@ function PostCard({
     if (commentsLoading) return;
     setCommentsLoading(true);
     try {
-      const response = await fetch(`/api/posts/${post.id}/comments?page=${pageToLoad}&limit=5`);
+      const response = await fetch(`/api/posts/${post.id}/comments?page=${pageToLoad}&limit=5`, { credentials: 'include' });
       const resData = await response.json();
       if (response.ok && resData.success) {
         if (pageToLoad === 1) {
@@ -238,6 +238,7 @@ function PostCard({
     try {
       const response = await fetch(`/api/posts/${post.id}/comments`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ conteudo: commentText }),
       });
@@ -264,7 +265,8 @@ function PostCard({
   const handleDeleteComment = async (commentId: number) => {
     try {
       const response = await fetch(`/api/posts/${post.id}/comments/${commentId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include',
       });
       const resData = await response.json();
       if (response.ok && resData.success) {
@@ -580,9 +582,9 @@ function RightPanel({ isDarkMode, width = 280, userId }: { isDarkMode: boolean; 
     const loadPanelData = async () => {
       try {
         const [profileRes, rankingRes, tasksRes] = await Promise.all([
-          fetch(`/api/profile/${userId}`, { credentials: 'include' }),
+          fetch('/api/profile/me', { credentials: 'include' }),
           fetch('/api/ranking', { credentials: 'include' }),
-          fetch(`/api/tasks/user/${userId}`, { credentials: 'include' }),
+          fetch('/api/tasks/user', { credentials: 'include' }),
         ]);
 
         if (profileRes.ok) {
@@ -744,7 +746,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
     
     try {
       const catQuery = catFiltro !== 'todos' ? `&categoria=${catFiltro}` : '';
-      const response = await fetch(`/api/feed/${userId}?page=${pageToLoad}&limit=5&filtro=${filtro}${catQuery}`);
+      const response = await fetch(`/api/feed?page=${pageToLoad}&limit=5&filtro=${filtro}${catQuery}`, { credentials: 'include' });
       const resData = await response.json();
       
       if (response.ok && resData.success) {
@@ -827,13 +829,13 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
     setPosting(true);
     try {
       const fd = new FormData();
-      fd.append('user_id', String(userId));
       fd.append('descricao', desc);
       fd.append('categoria', cat);
       if (img) fd.append('imagem', img);
 
       const response = await fetch('/api/posts', {
         method: 'POST',
+        credentials: 'include',
         body: fd
       });
       const resData = await response.json();
@@ -866,7 +868,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   // --- 5. Operações de Curtidas ---
   const handleLike = async (postId: number) => {
     try {
-      const response = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+      const response = await fetch(`/api/posts/${postId}/like`, { method: 'POST', credentials: 'include' });
       const resData = await response.json();
       if (!response.ok) {
         toast.error(resData.error || "Erro ao curtir post");
@@ -879,7 +881,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
 
   const handleUnlike = async (postId: number) => {
     try {
-      const response = await fetch(`/api/posts/${postId}/like`, { method: 'DELETE' });
+      const response = await fetch(`/api/posts/${postId}/like`, { method: 'DELETE', credentials: 'include' });
       const resData = await response.json();
       if (!response.ok) {
         toast.error(resData.error || "Erro ao remover like");
@@ -893,7 +895,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   // --- 6. Operações de CRUD do Post ---
   const handleDeletePost = async (postId: number) => {
     try {
-      const response = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/posts/${postId}`, { method: 'DELETE', credentials: 'include' });
       const resData = await response.json();
       if (response.ok && resData.success) {
         toast.success("Iniciativa removida com sucesso.");
@@ -913,6 +915,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
     try {
       const response = await fetch(`/api/posts/${postId}`, {
         method: 'PUT',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ descricao: text, categoria: category })
       });

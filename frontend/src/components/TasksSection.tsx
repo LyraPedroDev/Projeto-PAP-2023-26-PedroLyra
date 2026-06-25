@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
 import { toast } from 'sonner';
+import { apiFetch } from '../services/api';
 
 interface Task {
   id: number;
@@ -124,10 +125,9 @@ function MissionRow({ task, onToggle, isDarkMode }: { task: Task; onToggle: (tas
           disabled={isUpdating}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          style={{ minWidth: 142 }}
           className="flex items-center justify-center gap-2 h-10 px-4 rounded-xl transition-all font-bold text-sm"
           style={{
-            color: '#fff',
+            minWidth: 142,
             background: task.completada
               ? (isDarkMode ? '#1f2d25' : '#dcfce7')
               : 'linear-gradient(90deg, #22c55e 0%, #10b981 100%)',
@@ -159,7 +159,7 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await fetch(`/api/tasks/user/${userId}`, { credentials: 'include' });
+        const res = await apiFetch('/api/tasks/user');
         const data = await res.json();
 
         if (res.ok) {
@@ -167,8 +167,7 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
         } else {
           toast.error('Erro ao carregar tarefas');
         }
-      } catch (err) {
-        console.error('Erro ao buscar tarefas:', err);
+      } catch {
         toast.error('Erro ao conectar ao servidor');
       } finally {
         setIsLoading(false);
@@ -186,12 +185,10 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
     try {
       if (!currentStatus) {
         // COMPLETAR TAREFA
-        const res = await fetch('/api/tasks/complete', {
+        const res = await apiFetch('/api/tasks/complete', {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: userId,
             tarefa_id: taskId
           })
         });
@@ -230,12 +227,10 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
         }
       } else {
         // DESMARCAR TAREFA
-        const res = await fetch('/api/tasks/uncomplete', {
+        const res = await apiFetch('/api/tasks/uncomplete', {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            user_id: userId,
             tarefa_id: taskId
           })
         });
@@ -252,8 +247,7 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
           toast.error(data.erro || 'Erro ao desmarcar tarefa');
         }
       }
-    } catch (err) {
-      console.error('Erro ao atualizar tarefa:', err);
+    } catch {
       toast.error('Erro ao conectar ao servidor');
     }
   };

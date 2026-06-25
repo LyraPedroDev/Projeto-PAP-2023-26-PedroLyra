@@ -42,8 +42,8 @@ def create_indexes():
             ON amizade(user_id, status)
         """))
         db.session.commit()
-    except Exception as e:
-        print(f"[DB-Index-Error] Falha ao criar índices no banco: {e}")
+    except Exception:
+        db.session.rollback()
 
 def init_db():
     """Cria tabelas e seed de dados iniciais (idêntico ao original)."""
@@ -110,5 +110,3 @@ def init_db():
             db.session.add(Tarefa(**tarefa_data))
 
         db.session.commit()
-
-    print("Banco de dados inicializado!")

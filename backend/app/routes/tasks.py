@@ -15,9 +15,10 @@ def get_tasks():
     } for t in tarefas])
 
 
+@tasks_bp.route('/api/tasks/user', methods=['GET'])
 @tasks_bp.route('/api/tasks/user/<int:user_id>', methods=['GET'])
 @login_required
-def get_user_tasks_route(user_id):
+def get_user_tasks_route(user_id=None):
     return jsonify(get_user_tasks(current_user().id))
 
 

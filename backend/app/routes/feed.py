@@ -17,10 +17,17 @@ def _get_logged_user_id():
     return session.get('user_id')
 
 # --- 1. Feed Principal Paginado ---
+@feed_bp.route('/api/feed', methods=['GET'])
 @feed_bp.route('/api/feed/<int:user_id>', methods=['GET'])
-def get_feed_route(user_id):
-    # Fallback para sessão se não especificado
+def get_feed_route(user_id=None):
     logged_id = _get_logged_user_id() or user_id
+    if not logged_id:
+        return jsonify({
+            "success": False,
+            "error": "Autenticação requerida.",
+            "code": "UNAUTHORIZED",
+            "status_code": 401
+        }), 401
     
     page = request.args.get('page', 1, type=int)
     limit = request.args.get('limit', 5, type=int)
@@ -33,7 +40,7 @@ def get_feed_route(user_id):
             "success": True,
             "data": resultado
         }), 200
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro interno ao processar feed",
@@ -122,8 +129,7 @@ def criar_publicacao_route():
             "code": "INVALID_FILE_TYPE",
             "status_code": 415
         }), 415
-    except Exception as e:
-        print(f"[Log-Erro] POST /api/posts: {e}")
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro interno no servidor ao salvar post.",
@@ -218,7 +224,7 @@ def edit_post_route(post_id):
             "code": "PERMISSION_DENIED",
             "status_code": 403
         }), 403
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro interno no servidor ao editar.",
@@ -267,7 +273,7 @@ def deletar_post_route(post_id):
             "code": "PERMISSION_DENIED",
             "status_code": 403
         }), 403
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro interno no servidor.",
@@ -325,7 +331,7 @@ def curtir_post_route(post_id):
             "code": "ALREADY_LIKED",
             "status_code": 409
         }), 409
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro interno ao dar curtir.",
@@ -382,7 +388,7 @@ def descurtir_post_route(post_id):
             "code": "NOT_LIKED_YET",
             "status_code": 400
         }), 400
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro ao remover curtir.",
@@ -423,7 +429,7 @@ def get_like_status_route(post_id):
                 "likes_count": likes_count
             }
         }), 200
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro interno no servidor.",
@@ -495,7 +501,7 @@ def criar_comentario_route(post_id):
             "code": "INVALID_CONTENT",
             "status_code": 400
         }), 400
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro ao criar comentário.",
@@ -529,7 +535,7 @@ def get_comments_route(post_id):
             "code": "NOT_FOUND",
             "status_code": 404
         }), 404
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro interno ao listar comentários.",
@@ -584,7 +590,7 @@ def deletar_comentario_route(post_id, comment_id):
             "code": "PERMISSION_DENIED",
             "status_code": 403
         }), 403
-    except Exception as e:
+    except Exception:
         return jsonify({
             "success": False,
             "error": "Erro ao deletar comentário.",

@@ -7,6 +7,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { UserProfileModal } from './UserProfileModal';
+import { apiFetch, apiJson } from '../services/api';
 
 interface RankingUser {
   id: number;
@@ -31,6 +32,17 @@ export function RankingSection({ userId }: RankingSectionProps) {
   const [selectedUser, setSelectedUser] = useState<RankingUser | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const openUserProfile = async (user: RankingUser) => {
+    try {
+      const friendsList = await apiJson<Array<{ id: number }>>('/api/friends');
+      const isFriend = friendsList.some((friend) => friend.id === user.id);
+      setSelectedUser({ ...user, isFriend });
+    } catch {
+      setSelectedUser(user);
+    }
+    setIsModalOpen(true);
+  };
+
   // Mapeamento de avatares baseado no nível
   const getAvatar = (nivel: string) => {
     const avatarMap: { [key: string]: string } = {
@@ -47,7 +59,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
     try {
       if (showToast) setIsRefreshing(true);
       
-      const res = await fetch('/api/ranking');
+      const res = await apiFetch('/api/ranking');
       const data = await res.json();
 
       if (res.ok) {
@@ -56,8 +68,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
       } else {
         toast.error('Erro ao carregar ranking');
       }
-    } catch (err) {
-      console.error('Erro ao buscar ranking:', err);
+    } catch {
       if (showToast) toast.error('Erro ao conectar ao servidor');
     } finally {
       setIsLoading(false);
@@ -128,21 +139,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
               transition={{ delay: index * 0.15, type: 'spring', stiffness: 200, damping: 20 }}
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
-              onClick={async () => {
-                try {
-                  const res = await fetch(`/api/friends/${userId}`);
-                  if (res.ok) {
-                    const friendsList = await res.json();
-                    const isFriend = friendsList.some((f: any) => f.id === user.id);
-                    setSelectedUser({ ...user, isFriend });
-                  } else {
-                    setSelectedUser(user);
-                  }
-                } catch {
-                  setSelectedUser(user);
-                }
-                setIsModalOpen(true);
-              }}
+              onClick={() => openUserProfile(user)}
               style={{ cursor: 'pointer' }}
             >
               <Card className={`text-center h-full hover:shadow-md transition-shadow ${
@@ -193,21 +190,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
                     transition={{ delay: index * 0.08, type: 'spring', stiffness: 200 }}
                     whileHover={{ scale: 1.01, x: 5, backgroundColor: 'rgba(16, 185, 129, 0.05)' }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(`/api/friends/${userId}`);
-                        if (res.ok) {
-                          const friendsList = await res.json();
-                          const isFriend = friendsList.some((f: any) => f.id === user.id);
-                          setSelectedUser({ ...user, isFriend });
-                        } else {
-                          setSelectedUser(user);
-                        }
-                      } catch {
-                        setSelectedUser(user);
-                      }
-                      setIsModalOpen(true);
-                    }}
+                    onClick={() => openUserProfile(user)}
                     style={{ cursor: 'pointer' }}
                     className={`flex items-center gap-4 p-3 lg:p-4 rounded-lg transition-all ${
                       isCurrentUser 

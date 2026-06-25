@@ -94,15 +94,21 @@ npm run dev
 
 O frontend abre normalmente em `http://localhost:5173`.
 
-## Utilizadores de teste
+## Utilizadores de demonstração
 
-O backend cria utilizadores de teste automaticamente:
+O backend pode criar automaticamente utilizadores de demonstração quando a base de dados é recriada:
 
-- `teste@eco.com` / `123456`
-- `maria@email.com` / `123456`
-- `joao@email.com` / `123456`
-- `ana@email.com` / `123456`
+- `gabriel@gmail.com` / `123456`
+- `carla@gmail.com` / `123456`
 - `pedro@gmail.com` / `123456`
+- `admin@ecochat.com` / `123456`
+
+## Notas técnicas relevantes
+
+- a autenticação do utilizador baseia-se em sessão e cookies HTTP-only
+- as operações principais do utilizador autenticado usam o utilizador da sessão no backend
+- o frontend envia `credentials: include` para manter a sessão nas rotas protegidas
+- a área administrativa continua separada e protegida por permissão de administrador
 
 ## Notas
 

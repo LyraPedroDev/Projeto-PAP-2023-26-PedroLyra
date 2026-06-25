@@ -9,6 +9,7 @@ import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { toast } from 'sonner';
+import { apiFetch } from '../services/api';
 
 interface ProfileSectionProps {
   onLogout: () => void;
@@ -69,7 +70,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`/api/profile/${userId}`);
+        const res = await apiFetch('/api/profile/me');
         const data = await res.json();
 
         if (res.ok) {
@@ -94,8 +95,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
         } else {
           toast.error('Erro ao carregar perfil');
         }
-      } catch (err) {
-        console.error('Erro ao buscar perfil:', err);
+      } catch {
         toast.error('Erro ao conectar ao servidor');
       } finally {
         setIsLoading(false);
@@ -110,11 +110,10 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
     e.preventDefault();
 
     try {
-      const res = await fetch('/api/profile/update', {
+      const res = await apiFetch('/api/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: userId,
           nome: formData.name,
           email: formData.email
         })
@@ -131,8 +130,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
       } else {
         toast.error(data.erro || 'Erro ao atualizar perfil');
       }
-    } catch (err) {
-      console.error('Erro ao atualizar perfil:', err);
+    } catch {
       toast.error('Erro ao conectar ao servidor');
     }
   };
@@ -157,11 +155,10 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
     }
 
     try {
-      const res = await fetch('/api/profile/change-password', {
+      const res = await apiFetch('/api/profile/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: userId,
           senha_atual: formData.currentPassword,
           senha_nova: formData.newPassword
         })
@@ -175,8 +172,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
       } else {
         toast.error(data.erro || 'Erro ao alterar senha');
       }
-    } catch (err) {
-      console.error('Erro ao alterar senha:', err);
+    } catch {
       toast.error('Erro ao conectar ao servidor');
     }
   };

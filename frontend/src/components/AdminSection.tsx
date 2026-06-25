@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { BarChart3, Crown, Dice5, FileText, Plus, ShieldCheck, Sparkles, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { theme } from '../theme';
+import { apiFetch as requestApi } from '../services/api';
 
 interface AdminSectionProps {
   isDarkMode: boolean;
@@ -81,26 +82,8 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const [postForm, setPostForm] = useState({ user_id: '', descricao: '', categoria: 'geral', imagem: '' });
   const [missionForm, setMissionForm] = useState({ titulo: '', descricao: '', pontos: '10', categoria: 'daily', icone: 'Leaf' });
 
-  const apiFetch = useCallback(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const send = () => fetch(input, {
-      ...init,
-      credentials: 'include',
-      headers: {
-        ...(init?.headers || {}),
-      },
-    });
-
-    let response = await send();
-    if (response.status !== 401) return response;
-
-    const refresh = await fetch('/api/auth/refresh', {
-      method: 'POST',
-      credentials: 'include',
-    });
-
-    if (!refresh.ok) return response;
-    response = await send();
-    return response;
+  const apiFetch = useCallback((input: RequestInfo | URL, init?: RequestInit) => {
+    return requestApi(input, init);
   }, []);
 
   const load = useCallback(async () => {
@@ -155,7 +138,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   useEffect(() => {
     const loadFallbackPosts = async () => {
       if (posts.length > 0) return;
-      const response = await apiFetch(`/api/feed/${currentUserId}?page=1&limit=100&filtro=para-voce`);
+      const response = await apiFetch(`/api/feed?page=1&limit=100&filtro=para-voce`);
       if (!response.ok) return;
       const payload = await response.json();
       const feedPosts = payload?.data?.posts;

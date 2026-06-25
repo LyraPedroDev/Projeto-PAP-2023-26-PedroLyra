@@ -6,11 +6,13 @@ from .extensions import db, cors, socketio
 
 def create_app(config_class=Config) -> Flask:
     root_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    dist_dir = os.path.join(root_dir, 'frontend', 'dist')
     build_dir = os.path.join(root_dir, 'frontend', 'build')
+    frontend_dir = dist_dir if os.path.isdir(dist_dir) else build_dir
 
     app = Flask(__name__,
-                static_folder=build_dir,
-                template_folder=build_dir,
+                static_folder=frontend_dir,
+                template_folder=frontend_dir,
                 static_url_path='/')
     app.config.from_object(config_class)
 
@@ -30,8 +32,8 @@ def create_app(config_class=Config) -> Flask:
                       cors_allowed_origins=app.config['ALLOWED_ORIGINS'],
                       async_mode=None,
                       manage_session=False,
-                      logger=True,
-                      engineio_logger=True)
+                      logger=bool(app.debug),
+                      engineio_logger=bool(app.debug))
 
     # ── Blueprints ────────────────────────────────────────────────
     from .routes.auth import auth_bp
@@ -68,7 +70,6 @@ def create_app(config_class=Config) -> Flask:
     with app.app_context():
         from .models import init_db
         init_db()
-        print(f"📊 Banco de dados SQLite inicializado com sucesso em: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
     # ── Servir o Frontend (React/Vite) ─────────────────────────────
     from flask import send_from_directory, jsonify
@@ -76,6 +77,13 @@ def create_app(config_class=Config) -> Flask:
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def serve(path):
+        if not app.static_folder or not os.path.isdir(app.static_folder):
+            return jsonify({
+                "success": False,
+                "error": "Frontend não compilado.",
+                "code": "FRONTEND_NOT_BUILT",
+                "status_code": 503
+            }), 503
         if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
             return send_from_directory(app.static_folder, path)
         if path.startswith("api/") or path.startswith("uploads/"):

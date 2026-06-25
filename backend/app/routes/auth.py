@@ -48,11 +48,8 @@ def register():
             return jsonify({"sucesso": False, "mensagem": erro}), 400
 
         return jsonify({"sucesso": True, "mensagem": "Conta criada com sucesso!"})
-    except Exception as e:
-        import traceback
-        print(f"[Register-Error] Falha crítica no registro de usuário: {e}")
-        traceback.print_exc()
-        return jsonify({"sucesso": False, "mensagem": f"Erro interno ao processar cadastro: {str(e)}"}), 500
+    except Exception:
+        return jsonify({"sucesso": False, "mensagem": "Erro interno ao processar cadastro."}), 500
 
 
 @auth_bp.route('/api/auth/me', methods=['GET'])

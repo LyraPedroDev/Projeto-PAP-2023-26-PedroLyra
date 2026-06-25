@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { theme } from "../theme";
+import { apiFetch } from "../services/api";
 
 interface Friend {
   id: number;
@@ -37,24 +38,22 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
 
   const loadFriends = async () => {
     try {
-      const res = await fetch(`/api/friends/${userId}`);
+      const res = await apiFetch(`/api/friends`);
       if (!res.ok) throw new Error("Erro");
       const data: Friend[] = await res.json();
       setFriends(data);
-    } catch (err) {
-      console.error("Erro ao carregar amigos:", err);
+    } catch {
       toast.error("Erro ao carregar amigos");
     }
   };
 
   const loadPending = async () => {
     try {
-      const res = await fetch(`/api/friends/pending/${userId}`);
+      const res = await apiFetch(`/api/friends/pending`);
       if (!res.ok) throw new Error("Erro");
       const data: PendingRequest[] = await res.json();
       setPendingRequests(data);
-    } catch (err) {
-      console.error("Erro ao carregar pendentes:", err);
+    } catch {
     }
   };
 
@@ -79,10 +78,10 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       setIsAdding(true);
       const alvo = isNaN(Number(addValue)) ? addValue : Number(addValue);
 
-      const res = await fetch("/api/friends/add", {
+      const res = await apiFetch("/api/friends/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, alvo }),
+        body: JSON.stringify({ alvo }),
       });
 
       const data = await res.json();
@@ -94,8 +93,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       } else {
         toast.error(data.erro || "Erro ao adicionar");
       }
-    } catch (err) {
-      console.error("Erro:", err);
+    } catch {
       toast.error("Erro ao enviar convite");
     } finally {
       setIsAdding(false);
@@ -104,10 +102,10 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
 
   const acceptRequest = async (friendId: number) => {
     try {
-      const res = await fetch("/api/friends/accept", {
+      const res = await apiFetch("/api/friends/accept", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, friend_id: friendId }),
+        body: JSON.stringify({ friend_id: friendId }),
       });
 
       const data = await res.json();
@@ -118,18 +116,17 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       } else {
         toast.error(data.erro || "Erro ao aceitar");
       }
-    } catch (err) {
-      console.error("Erro:", err);
+    } catch {
       toast.error("Erro ao aceitar pedido");
     }
   };
 
   const declineRequest = async (friendId: number) => {
     try {
-      const res = await fetch("/api/friends/decline", {
+      const res = await apiFetch("/api/friends/decline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, friend_id: friendId }),
+        body: JSON.stringify({ friend_id: friendId }),
       });
 
       const data = await res.json();
@@ -140,8 +137,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       } else {
         toast.error(data.erro || "Erro ao recusar");
       }
-    } catch (err) {
-      console.error("Erro:", err);
+    } catch {
       toast.error("Erro ao recusar pedido");
     }
   };
@@ -150,10 +146,10 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
     if (!confirm("Remover este amigo?")) return;
 
     try {
-      const res = await fetch("/api/friends/remove", {
+      const res = await apiFetch("/api/friends/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, friend_id: friendId }),
+        body: JSON.stringify({ friend_id: friendId }),
       });
 
       const data = await res.json();
@@ -164,8 +160,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       } else {
         toast.error(data.erro || "Erro ao remover");
       }
-    } catch (err) {
-      console.error("Erro:", err);
+    } catch {
       toast.error("Erro ao remover amigo");
     }
   };

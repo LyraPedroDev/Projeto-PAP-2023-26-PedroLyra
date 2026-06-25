@@ -12,7 +12,7 @@ def home():
         "mensagem": "🌱 EcoChat API está ativa!",
         "rotas_disponiveis": [
             "/api/login", "/api/register", "/api/chat",
-            "/api/status", "/api/friends/*", "/api/profile/<user_id>",
+            "/api/status", "/api/friends/*", "/api/profile/me",
             "/api/tasks/*", "/api/ranking",
             "/api/feed/*", "/api/posts/*",
         ]

@@ -8,15 +8,17 @@ from ..auth_tokens import current_user, login_required
 friends_bp = Blueprint('friends', __name__)
 
 
+@friends_bp.route("/api/friends", methods=["GET"])
 @friends_bp.route("/api/friends/<int:user_id>", methods=["GET"])
 @login_required
-def get_amigos(user_id):
+def get_amigos(user_id=None):
     return jsonify(listar_amigos(current_user().id))
 
 
+@friends_bp.route("/api/friends/pending", methods=["GET"])
 @friends_bp.route("/api/friends/pending/<int:user_id>", methods=["GET"])
 @login_required
-def get_pendentes(user_id):
+def get_pendentes(user_id=None):
     return jsonify(listar_pendentes(current_user().id))
 
 

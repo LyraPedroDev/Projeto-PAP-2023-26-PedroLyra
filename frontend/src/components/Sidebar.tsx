@@ -76,7 +76,7 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
 
     const loadProfile = async () => {
       try {
-        const response = await fetch(`/api/profile/${userId}`, { credentials: 'include' });
+        const response = await fetch('/api/profile/me', { credentials: 'include' });
         if (!response.ok) return;
 
         const data = await response.json();
