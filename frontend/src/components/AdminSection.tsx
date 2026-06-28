@@ -467,14 +467,36 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
 
   return (
     <div style={{ maxWidth: 1150, margin: '0 auto', color: T.text }}>
-      <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }}>
-        <p style={{ color: T.accent, fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em' }}>
-          Administração
-        </p>
-        <h1 style={{ fontSize: 32, fontWeight: 900, margin: '5px 0 6px' }}>Painel EcoChat</h1>
-        <p style={{ color: T.textSub }}>
-          Gere utilizadores, publicações e missões num único lugar.
-        </p>
+      <motion.div
+        initial={{ opacity: 0, y: -14 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          padding: 24,
+          borderRadius: 24,
+          border: `1px solid ${isDarkMode ? 'rgba(16,185,129,0.18)' : 'rgba(16,185,129,0.12)'}`,
+          background: isDarkMode
+            ? 'linear-gradient(135deg, rgba(6,14,8,0.95), rgba(10,30,18,0.92))'
+            : 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+          boxShadow: isDarkMode
+            ? '0 12px 32px rgba(0,0,0,0.22)'
+            : '0 10px 30px rgba(15,23,42,0.05)',
+        }}
+      >
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg shadow-green-500/20">
+          <ShieldCheck size={28} />
+        </div>
+        <div>
+          <p style={{ color: isDarkMode ? '#34d399' : '#059669', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 6 }}>
+            Administração
+          </p>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: isDarkMode ? '#86efac' : '#0f172a' }}>Painel EcoChat</h1>
+          <p style={{ fontSize: 14, marginTop: 4, color: isDarkMode ? 'rgba(255,255,255,0.70)' : '#475569' }}>
+            Gere utilizadores, publicações e missões num único lugar.
+          </p>
+        </div>
       </motion.div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 14, margin: '26px 0' }}>

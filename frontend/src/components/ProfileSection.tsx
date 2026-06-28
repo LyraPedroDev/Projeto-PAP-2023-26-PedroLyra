@@ -192,9 +192,28 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          padding: 24,
+          borderRadius: 24,
+          border: `1px solid ${isDarkMode ? 'rgba(16,185,129,0.18)' : 'rgba(16,185,129,0.12)'}`,
+          background: isDarkMode
+            ? 'linear-gradient(135deg, rgba(6,14,8,0.95), rgba(10,30,18,0.92))'
+            : 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+          boxShadow: isDarkMode
+            ? '0 12px 32px rgba(0,0,0,0.22)'
+            : '0 10px 30px rgba(15,23,42,0.05)',
+        }}
       >
-        <h1 className="text-green-800 dark:text-green-300 mb-2">Editar Perfil</h1>
-        <p className="text-gray-600 dark:text-gray-400">Gerencie suas informações pessoais e conquistas</p>
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg shadow-green-500/20">
+          <User size={28} />
+        </div>
+        <div>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: isDarkMode ? '#86efac' : '#0f172a' }}>Editar Perfil</h1>
+          <p style={{ fontSize: 14, marginTop: 4, color: isDarkMode ? 'rgba(255,255,255,0.70)' : '#475569' }}>Gerencie suas informações pessoais e conquistas</p>
+        </div>
       </motion.div>
 
       {/* Profile overview */}

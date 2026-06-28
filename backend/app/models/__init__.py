@@ -9,13 +9,14 @@ from .private_message import PrivateMessage
 
 from ..extensions import db
 from werkzeug.security import generate_password_hash
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 import random
 
 
 def create_indexes():
     """Cria índices para otimizar performance do feed"""
-    from sqlalchemy import text
+    if db.engine.dialect.name != "sqlite":
+        return
     try:
         db.session.execute(text("""
             CREATE INDEX IF NOT EXISTS idx_publicacao_created_at 
@@ -48,12 +49,11 @@ def create_indexes():
 def init_db():
     """Cria tabelas e seed de dados iniciais (idêntico ao original)."""
     db.create_all()
-    columns = {
-        row[1] for row in db.session.execute(text("PRAGMA table_info(usuario)")).fetchall()
-    }
+    columns = {column["name"] for column in inspect(db.engine).get_columns("usuario")}
     if 'is_admin' not in columns:
+        default_value = "false" if db.engine.dialect.name == "postgresql" else "0"
         db.session.execute(text(
-            "ALTER TABLE usuario ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0"
+            f"ALTER TABLE usuario ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT {default_value}"
         ))
         db.session.commit()
     create_indexes()

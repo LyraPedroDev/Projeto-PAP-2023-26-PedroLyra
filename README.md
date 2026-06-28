@@ -112,6 +112,8 @@ O backend pode criar automaticamente utilizadores de demonstração quando a bas
 
 ## Notas
 
+- em producao, configure `DATABASE_URL` com uma base de dados persistente, por exemplo PostgreSQL no Render
+- para guardar imagens de publicacoes em producao, configure `ECOCHAT_UPLOAD_FOLDER` para uma pasta em disco persistente ou use um servico externo de ficheiros
 - o projeto usa SQLite local no backend
 - o ficheiro de base de dados é criado localmente na pasta `backend`
 - `node_modules`, `venv`, caches e ficheiros gerados não devem ser versionados
