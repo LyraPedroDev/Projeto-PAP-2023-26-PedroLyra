@@ -292,7 +292,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                   key={req.id}
                   className="flex items-center gap-4 rounded-2xl border-2 border-yellow-300 bg-white p-4 shadow-sm transition-all dark:border-yellow-700 dark:bg-gray-800"
                 >
-                  <div className="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center text-yellow-700 dark:text-yellow-300 font-bold text-lg">
+                  <div className="w-12 h-12 min-w-[48px] min-h-[48px] shrink-0 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center text-yellow-700 dark:text-yellow-300 font-bold text-lg">
                     {localStorage.getItem(`user_avatar_${req.id}`) || req.nome.charAt(0).toUpperCase()}
                   </div>
 
@@ -398,7 +398,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
                   key={friend.id}
                   className="flex items-center gap-4 rounded-2xl border border-green-100 bg-gradient-to-r from-white to-green-50/70 p-4 transition-all cursor-pointer dark:border-gray-700 dark:bg-gray-800"
                 >
-                  <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-700 dark:text-green-300 font-bold text-lg">
+                  <div className="w-12 h-12 min-w-[48px] min-h-[48px] shrink-0 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-700 dark:text-green-300 font-bold text-lg">
                     {localStorage.getItem(`user_avatar_${friend.id}`) || friend.nome.charAt(0).toUpperCase()}
                   </div>
                   

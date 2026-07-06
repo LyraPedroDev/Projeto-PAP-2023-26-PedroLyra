@@ -120,7 +120,7 @@ function CommentItem({ comment, onDelete, currentUserId }: { comment: Comentario
 
   return (
     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-      <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg,#10b981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+      <div style={{ width: 30, height: 30, minWidth: 30, minHeight: 30, borderRadius: 8, background: 'linear-gradient(135deg,#10b981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
         {comment.usuario.nome[0].toUpperCase()}
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -338,7 +338,7 @@ function PostCard({
       {/* Header do Post */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px 12px' }}>
         <div style={{ 
-          width: 40, height: 40, borderRadius: 12, 
+          width: 40, height: 40, minWidth: 40, minHeight: 40, borderRadius: 12, 
           background: `linear-gradient(135deg, ${color}, ${color}99)`, 
           display: 'flex', alignItems: 'center', justifyContent: 'center', 
           fontSize: post.usuario.id === userId ? 20 : 14, fontWeight: 800, color: '#fff', flexShrink: 0 

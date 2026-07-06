@@ -376,6 +376,8 @@ export function PrivateChatSection({
                     style={{
                       width: 42,
                       height: 42,
+                      minWidth: 42,
+                      minHeight: 42,
                       borderRadius: 12,
                       background: isActive
                         ? `linear-gradient(135deg, ${T.accent}, #059669)`
@@ -546,6 +548,8 @@ export function PrivateChatSection({
                 style={{
                   width: 38,
                   height: 38,
+                  minWidth: 38,
+                  minHeight: 38,
                   borderRadius: 10,
                   background: `linear-gradient(135deg, ${T.accent}, #059669)`,
                   display: 'flex',
