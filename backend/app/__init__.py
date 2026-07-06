@@ -12,8 +12,7 @@ def create_app(config_class=Config) -> Flask:
 
     app = Flask(__name__,
                 static_folder=frontend_dir,
-                template_folder=frontend_dir,
-                static_url_path='/')
+                template_folder=frontend_dir)
     app.config.from_object(config_class)
 
     from .auth_tokens import load_user_from_token
