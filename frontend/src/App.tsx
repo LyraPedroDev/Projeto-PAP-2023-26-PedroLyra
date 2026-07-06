@@ -65,8 +65,17 @@ export default function App() {
         if (!socket.connected) socket.connect();
       } else {
         localStorage.removeItem('user_id');
+        const currentPath = window.location.pathname;
+        if (currentPath === '/login') {
+          navigateTo('login', { replace: true });
+        } else {
+          navigateTo('landing', { replace: true });
+        }
       }
-      navigateTo('landing', { replace: true });
+      
+      if (res.ok) {
+        navigateTo('app', { replace: true });
+      }
       setIsSessionLoading(false);
     };
 

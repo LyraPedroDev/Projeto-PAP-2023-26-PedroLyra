@@ -23,7 +23,13 @@ interface ChatPageProps {
 type Section = 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private' | 'admin';
 
 export function ChatPage({ onLogout, isDarkMode, toggleTheme, userId, isAdmin }: ChatPageProps) {
-  const [activeSection, setActiveSection] = useState<Section>('feed');
+  const [activeSection, setActiveSection] = useState<Section>(() => {
+    return (localStorage.getItem('ecochat_active_section') as Section) || 'feed';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ecochat_active_section', activeSection);
+  }, [activeSection]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [userName, setUserName] = useState('');
   const [privateChatFriendId, setPrivateChatFriendId] = useState<number | null>(null);
