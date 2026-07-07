@@ -465,6 +465,29 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
     toast.success('Missão apagada com sucesso');
   };
 
+  const resetDatabase = async () => {
+    if (!window.confirm("ATENÇÃO: Tens a certeza que queres APAGAR completamente a base de dados? Esta ação não pode ser desfeita!")) return;
+    
+    const confirmText = prompt('Escreve "APAGAR TUDO" para confirmar a limpeza da base de dados:');
+    if (confirmText !== "APAGAR TUDO") {
+      toast.error("Limpeza cancelada. O texto de confirmação não coincide.");
+      return;
+    }
+
+    try {
+      const res = await apiFetch('/api/admin/reset-database', { method: 'POST' });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        toast.error(data?.erro || 'Erro ao limpar a base de dados');
+        return;
+      }
+      toast.success(data?.mensagem || 'Base de dados limpa com sucesso!');
+      load();
+    } catch {
+      toast.error('Erro de conexão ao servidor.');
+    }
+  };
+
   return (
     <div style={{ maxWidth: 1150, margin: '0 auto', color: T.text }}>
       <motion.div
@@ -488,7 +511,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-green-600 text-white shadow-lg shadow-green-500/20">
           <ShieldCheck size={28} />
         </div>
-        <div>
+        <div style={{ flex: 1 }}>
           <p style={{ color: isDarkMode ? '#34d399' : '#059669', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.16em', marginBottom: 6 }}>
             Administração
           </p>
@@ -496,6 +519,17 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
           <p style={{ fontSize: 14, marginTop: 4, color: isDarkMode ? 'rgba(255,255,255,0.70)' : '#475569' }}>
             Gere utilizadores, publicações e missões num único lugar.
           </p>
+        </div>
+        <div>
+          <motion.button 
+             onClick={resetDatabase}
+             whileHover={{ scale: 1.05 }}
+             whileTap={{ scale: 0.95 }}
+             style={{ background: '#ef4444', color: 'white', padding: '10px 16px', borderRadius: 12, border: 'none', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)' }}
+             title="Apagar Base de Dados"
+          >
+             <Trash2 size={18} /> <span className="hidden sm:inline">Limpar Dados</span>
+          </motion.button>
         </div>
       </motion.div>
 

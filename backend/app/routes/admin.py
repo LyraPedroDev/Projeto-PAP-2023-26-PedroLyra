@@ -386,3 +386,17 @@ def random_mission():
         return jsonify({'erro': 'Não existem missões'}), 404
     mission = random.choice(missions)
     return jsonify(_serialize_mission(mission))
+
+
+@admin_bp.route('/api/admin/reset-database', methods=['POST'])
+@admin_required
+def reset_database():
+    try:
+        db.drop_all()
+        from ..models import init_db
+        init_db()
+        return jsonify({'sucesso': True, 'mensagem': 'Base de dados limpa e reiniciada com sucesso.'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'erro': f'Erro ao limpar base de dados: {str(e)}'}), 500
+
