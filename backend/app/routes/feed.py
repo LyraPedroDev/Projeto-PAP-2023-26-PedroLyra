@@ -519,9 +519,16 @@ def get_comments_route(post_id):
     try:
         resultado = get_comments_paginated(post_id, page=page, limit=limit)
         
+        # Verificar se o user é admin
+        is_admin = False
+        if user_id:
+            usuario_atual = Usuario.query.get(user_id)
+            if usuario_atual and usuario_atual.is_admin:
+                is_admin = True
+                
         # Mapear permissão de deleção inline dinamicamente
         for c in resultado['comentarios']:
-            c['user_can_delete'] = (user_id is not None) and (c['usuario']['id'] == user_id)
+            c['user_can_delete'] = (user_id is not None) and (c['usuario']['id'] == user_id or is_admin)
 
         return jsonify({
             "success": True,

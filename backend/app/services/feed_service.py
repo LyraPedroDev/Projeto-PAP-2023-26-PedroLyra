@@ -22,29 +22,39 @@ def _allowed_file(filename: str) -> bool:
 
 def validate_post_ownership(user_id: int, post_id: int) -> bool:
     """
-    Valida se o usuário é dono da publicação.
+    Valida se o usuário é dono da publicação ou se é administrador.
     Retorna True se puder editar/deletar.
     Levanta ValueError se a publicação não existir.
-    Levanta PermissionError se não for o proprietário.
+    Levanta PermissionError se não for o proprietário nem admin.
     """
     post = Publicacao.query.get(post_id)
     if not post:
         raise ValueError("Publicação não encontrada")
-    if post.user_id != user_id:
+        
+    usuario = Usuario.query.get(user_id)
+    if not usuario:
+        raise PermissionError("Usuário não encontrado")
+        
+    if post.user_id != user_id and not usuario.is_admin:
         raise PermissionError("Você não tem permissão para gerenciar esta publicação")
     return True
 
 def validate_comment_ownership(user_id: int, comment_id: int) -> bool:
     """
-    Valida se o usuário é dono do comentário.
+    Valida se o usuário é dono do comentário ou administrador.
     Retorna True se puder deletar.
     Levanta ValueError se o comentário não existir.
-    Levanta PermissionError se não for o proprietário.
+    Levanta PermissionError se não for o proprietário nem admin.
     """
     comment = Comentario.query.get(comment_id)
     if not comment:
         raise ValueError("Comentário não encontrado")
-    if comment.user_id != user_id:
+        
+    usuario = Usuario.query.get(user_id)
+    if not usuario:
+        raise PermissionError("Usuário não encontrado")
+        
+    if comment.user_id != user_id and not usuario.is_admin:
         raise PermissionError("Você não tem permissão para excluir este comentário")
     return True
 
@@ -211,6 +221,9 @@ def get_feed(user_id: int, page: int = 1, limit: int = 5, categoria: str = None,
         # Ordenação cronológica reversa nativa
         publicacoes = query.order_by(Publicacao.criada_em.desc()).offset(offset).limit(limit).all()
 
+    current_user_obj = Usuario.query.get(user_id) if user_id else None
+    current_user_is_admin = current_user_obj.is_admin if current_user_obj else False
+
     for pub in publicacoes:
         usuario = Usuario.query.get(pub.user_id)
         if not usuario:
@@ -239,7 +252,7 @@ def get_feed(user_id: int, page: int = 1, limit: int = 5, categoria: str = None,
             "likes_count": likes_count,
             "comments_count": coms_count,
             "user_liked": user_liked,
-            "is_owner": pub.user_id == user_id,
+            "is_owner": pub.user_id == user_id or current_user_is_admin,
             "edited": False # Campo visual para controle no frontend
         })
 
