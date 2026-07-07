@@ -126,6 +126,8 @@
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+    width: 100%;
   }
 }
 
@@ -186,4 +188,6 @@
 
 html {
   font-size: var(--font-size);
+  overflow-x: hidden;
+  width: 100%;
 }

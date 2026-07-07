@@ -57,23 +57,19 @@ function MissionRow({ task, onToggle, isDarkMode }: { task: Task; onToggle: (tas
     <motion.div
       variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
       whileHover={{ scale: 1.01 }}
+      className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl transition-all"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 16,
-        padding: 16,
-        borderRadius: 16,
         border: task.completada
           ? (isDarkMode ? '1px solid rgba(34,197,94,0.28)' : '1px solid rgba(34,197,94,0.18)')
           : (isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(15,23,42,0.08)'),
         background: task.completada
           ? (isDarkMode ? 'rgba(20,83,45,0.35)' : 'rgba(220,252,231,0.9)')
           : (isDarkMode ? '#0d1711' : '#ffffff'),
-        transition: 'all 0.2s ease',
         boxShadow: isDarkMode ? 'none' : '0 10px 24px rgba(15,23,42,0.04)',
       }}
     >
-      <div
+      <div className="flex items-center gap-4 flex-1 min-w-0 w-full">
+        <div
         className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-colors ${task.completada ? 'bg-green-500 text-white' : getIconBg()}`}
         style={!task.completada ? { background: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(15,23,42,0.04)' } : undefined}
       >
@@ -82,7 +78,7 @@ function MissionRow({ task, onToggle, isDarkMode }: { task: Task; onToggle: (tas
 
       <div className="flex-1 min-w-0">
         <h3
-          className="font-bold text-base truncate"
+          className="font-bold text-base line-clamp-2 sm:truncate leading-tight"
           style={{
             color: task.completada
               ? (isDarkMode ? 'rgba(255,255,255,0.72)' : '#166534')
@@ -93,7 +89,7 @@ function MissionRow({ task, onToggle, isDarkMode }: { task: Task; onToggle: (tas
           {task.titulo}
         </h3>
         <p
-          className="text-sm truncate"
+          className="text-sm line-clamp-2 sm:truncate mt-0.5"
           style={{
             color: task.completada
               ? (isDarkMode ? 'rgba(255,255,255,0.52)' : '#15803d')
@@ -103,11 +99,12 @@ function MissionRow({ task, onToggle, isDarkMode }: { task: Task; onToggle: (tas
           {task.descricao}
         </p>
       </div>
+      </div>
 
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto mt-2 sm:mt-0 justify-between sm:justify-end">
         <Badge
           variant="secondary"
-          className="font-bold border-0"
+          className="font-bold border-0 h-10 px-3 flex items-center justify-center whitespace-nowrap"
           style={{
             background: task.completada
               ? (isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(34,197,94,0.12)')
@@ -125,9 +122,8 @@ function MissionRow({ task, onToggle, isDarkMode }: { task: Task; onToggle: (tas
           disabled={isUpdating}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          className="flex items-center justify-center gap-2 h-10 px-4 rounded-xl transition-all font-bold text-sm"
+          className="flex-1 sm:flex-none flex items-center justify-center gap-2 h-10 px-4 rounded-xl transition-all font-bold text-sm whitespace-nowrap"
           style={{
-            minWidth: 142,
             background: task.completada
               ? (isDarkMode ? '#1f2d25' : '#dcfce7')
               : 'linear-gradient(90deg, #22c55e 0%, #10b981 100%)',
