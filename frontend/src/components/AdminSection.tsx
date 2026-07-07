@@ -59,10 +59,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   geral: 'Geral',
 };
 const ICON_LABELS: Record<string, string> = {
-  Leaf: 'Folha',
-  Recycle: 'Reciclagem',
-  Droplet: 'Gota',
-  Zap: 'Energia',
+  Leaf: '🌿 Folha (Natureza / Geral)',
+  Recycle: '♻️ Reciclagem (Lixo / Reaproveitar)',
+  Droplet: '💧 Gota (Água / Poupança)',
+  Zap: '⚡ Energia (Eletricidade)',
 };
 
 export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
@@ -78,7 +78,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
   const [editingPostId, setEditingPostId] = useState<number | null>(null);
   const [editingMissionId, setEditingMissionId] = useState<number | null>(null);
 
-  const [userForm, setUserForm] = useState({ nome: '', email: '', senha: '', is_admin: false });
+  const [userForm, setUserForm] = useState({ nome: '', email: '', senha: '', is_admin: false, pontos: '0' });
   const [postForm, setPostForm] = useState({ user_id: '', descricao: '', categoria: 'geral', imagem: '' });
   const [missionForm, setMissionForm] = useState({ titulo: '', descricao: '', pontos: '10', categoria: 'daily', icone: 'Leaf' });
 
@@ -226,7 +226,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
 
   const resetUserForm = () => {
     setEditingUserId(null);
-    setUserForm({ nome: '', email: '', senha: '', is_admin: false });
+    setUserForm({ nome: '', email: '', senha: '', is_admin: false, pontos: '0' });
   };
 
   const resetPostForm = () => {
@@ -280,6 +280,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
       email: userForm.email,
       senha: userForm.senha,
       is_admin: userForm.is_admin,
+      pontos: userForm.pontos,
     };
 
     const res = await apiFetch(
@@ -318,7 +319,7 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
 
   const editUser = (user: AdminUser) => {
     setEditingUserId(user.id);
-    setUserForm({ nome: user.nome, email: user.email, senha: '', is_admin: user.is_admin });
+    setUserForm({ nome: user.nome, email: user.email, senha: '', is_admin: user.is_admin, pontos: String(user.pontos || 0) });
     setActiveTab('users');
   };
 
@@ -612,7 +613,13 @@ export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
                   <input placeholder="Email" value={userForm.email} onChange={e => setUserForm(current => ({ ...current, email: e.target.value }))} style={inputStyle} />
                   <input placeholder={editingUserId ? 'Nova senha (opcional)' : 'Senha'} type="password" value={userForm.senha} onChange={e => setUserForm(current => ({ ...current, senha: e.target.value }))} style={inputStyle} />
                 </div>
-                <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 12, color: T.textSub }}>
+                <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', marginTop: 12 }}>
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 4, color: T.textSub, fontSize: 13, fontWeight: 600 }}>
+                    Pontos do Utilizador
+                    <input placeholder="Pontos" type="number" min={0} value={userForm.pontos} onChange={e => setUserForm(current => ({ ...current, pontos: e.target.value }))} style={inputStyle} />
+                  </label>
+                </div>
+                <label style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 16, color: T.textSub }}>
                   <input type="checkbox" checked={userForm.is_admin} onChange={e => setUserForm(current => ({ ...current, is_admin: e.target.checked }))} />
                   Definir como administrador
                 </label>

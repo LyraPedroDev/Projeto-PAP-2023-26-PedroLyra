@@ -191,6 +191,15 @@ def update_user(user_id):
     if is_admin is not None:
         user.is_admin = bool(is_admin)
 
+    pontos = data.get('pontos')
+    if pontos is not None:
+        stats_obj = UserStats.query.filter_by(user_id=user.id).first()
+        if stats_obj:
+            try:
+                stats_obj.pontos = max(int(pontos), 0)
+            except (ValueError, TypeError):
+                pass
+
     db.session.commit()
     stats = UserStats.query.filter_by(user_id=user.id).first()
     return jsonify(_serialize_user(user, stats))
