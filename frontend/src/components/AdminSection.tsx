@@ -59,10 +59,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   geral: 'Geral',
 };
 const ICON_LABELS: Record<string, string> = {
-  Leaf: '🌿 Folha (Natureza / Geral)',
-  Recycle: '♻️ Reciclagem (Lixo / Reaproveitar)',
-  Droplet: '💧 Gota (Água / Poupança)',
-  Zap: '⚡ Energia (Eletricidade)',
+  Leaf: '🌿 (Geral)',
+  Recycle: '♻️ (Reciclagem)',
+  Droplet: '💧 (Poupança)',
+  Zap: '⚡ (Energia)',
 };
 
 export function AdminSection({ isDarkMode, currentUserId }: AdminSectionProps) {
