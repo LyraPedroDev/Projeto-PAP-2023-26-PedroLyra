@@ -97,7 +97,7 @@ def criar_publicacao_route():
         return jsonify({
             "success": True,
             "data": post_dict,
-            "message": "Post criado com sucesso"
+            "message": "Publicação criada com sucesso! Ganhaste +5 pontos! 🌱"
         }), 201
 
     except ValueError as e:
