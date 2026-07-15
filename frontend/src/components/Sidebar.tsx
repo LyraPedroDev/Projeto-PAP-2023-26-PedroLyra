@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ShieldCheck, Trophy, CheckSquare, Users, User, Newspaper, LogOut, Sun, Moon, MessageSquareDot } from 'lucide-react';
 import { BrandLogo } from './ui/BrandLogo';
 import { theme } from '../theme';
+import { TutorialTarget } from '../tutorial/TutorialTarget';
 
 // Incluir 'private' no tipo Section
 type Section = 'feed' | 'ranking' | 'tasks' | 'friends' | 'profile' | 'private' | 'admin';
@@ -67,8 +68,21 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
         setAvatar(localStorage.getItem(`user_avatar_${userId}`) || '🌱');
       }
     };
+    
+    const handleAvatarUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && String(customEvent.detail.userId) === String(userId)) {
+        setAvatar(customEvent.detail.avatar);
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('user-avatar-updated', handleAvatarUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('user-avatar-updated', handleAvatarUpdate);
+    };
   }, [userId]);
 
   useEffect(() => {
@@ -132,18 +146,19 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
       </motion.div>
 
       {/* Nav */}
-      <motion.nav 
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        style={{ flex: 1, padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}
-      >
+      <TutorialTarget id="tour-menu" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <motion.nav 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          style={{ flex: 1, padding: '14px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}
+        >
         <motion.p variants={itemVariants} style={{ fontSize: 10, color: T.sidebarTextMuted, textTransform: 'uppercase', letterSpacing: '0.2em', padding: '6px 12px 4px', fontWeight: 600 }}>Navegação</motion.p>
         {[...MENU, ...(isAdmin ? [{ id: 'admin' as Section, icon: ShieldCheck, label: 'Admin' }] : [])].map(item => {
           const Icon = item.icon;
           const active = activeSection === item.id;
           return (
-            <motion.button key={item.id} onClick={() => setActiveSection(item.id)}
+            <motion.button key={item.id} id={`tour-nav-${item.id}`} onClick={() => setActiveSection(item.id)}
               variants={itemVariants}
               whileHover={{ x: active ? 0 : 4, scale: 1.02 }} whileTap={{ scale: 0.95 }}
               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', borderRadius: 12, cursor: 'pointer', border: `1px solid ${active ? T.sidebarItemActiveBorder : 'transparent'}`, background: active ? T.sidebarItemActive : 'transparent', transition: 'background 0.2s, border 0.2s' }}>
@@ -157,7 +172,8 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
             </motion.button>
           );
         })}
-      </motion.nav>
+        </motion.nav>
+      </TutorialTarget>
 
       {/* Footer */}
       <motion.div 
@@ -167,6 +183,7 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
         style={{ padding: '12px 12px 20px', borderTop: `1px solid ${T.sidebarBorder}` }}
       >
         {/* Mini profile */}
+        <TutorialTarget id="tour-stats">
         <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 14, padding: '12px 14px', marginBottom: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
             <div style={{ width: 36, height: 36, minWidth: 36, minHeight: 36, borderRadius: 10, background: 'linear-gradient(135deg,#10b981,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
@@ -186,6 +203,7 @@ export function Sidebar({ activeSection, setActiveSection, onLogout, userName, i
             ))}
           </div>
         </div>
+        </TutorialTarget>
 
         {/* Theme toggle */}
         <motion.button onClick={toggleTheme} whileTap={{ scale: 0.97 }}

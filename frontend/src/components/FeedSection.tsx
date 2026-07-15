@@ -8,6 +8,9 @@ import { toast } from 'sonner';
 import { theme } from '../theme';
 import { socket } from '../services/socket';
 import { getImageForCategory } from '../categoryImages';
+import { useTutorial } from '../tutorial/TutorialProvider';
+import { TutorialTarget } from '../tutorial/TutorialTarget';
+import { useUserAvatar } from '../hooks/useUserAvatar';
 
 // --- Interfaces de Tipagem Consistentes ---
 interface Post {
@@ -175,6 +178,7 @@ function PostCard({
   const [likeCount, setLikeCount] = useState(post.likes_count);
   const [saved, setSaved] = useState(false);
   
+  const userAvatar = useUserAvatar(userId);
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(post.descricao);
@@ -344,7 +348,7 @@ function PostCard({
           fontSize: post.usuario.id === userId ? 20 : 14, fontWeight: 800, color: '#fff', flexShrink: 0 
         }}>
           {post.usuario.id === userId 
-            ? (localStorage.getItem(`user_avatar_${userId}`) || '🌱') 
+            ? userAvatar
             : initials(post.usuario.nome)
           }
         </div>
@@ -721,6 +725,8 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   const isMobile = windowWidth < 768;
   const isTablet = windowWidth >= 768 && windowWidth < 1024;
   
+  const { state, notifySectionReady } = useTutorial();
+  
   // --- Estados do Feed ---
   const [posts, setPosts] = useState<Post[]>([]);
   const [filtro, setFiltro] = useState('para-voce'); // Abas
@@ -730,6 +736,9 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [trendingTags, setTrendingTags] = useState(['#EcoWeek', '#ZeroWaste', '#GreenCity']);
+
+  const userAvatar = useUserAvatar(userId);
 
   // --- Estados do Criador de Post ---
   const [desc, setDesc] = useState('');
@@ -777,6 +786,17 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
   useEffect(() => {
     loadFeed(1, false);
   }, [userId, filtro, catFiltro]);
+
+  // Notificar o tutorial que a secção carregou os dados
+  useEffect(() => {
+    if (!loading && state.status === 'waiting' && state.requestedSection === 'feed' && state.activeRequestId) {
+      notifySectionReady({
+        section: 'feed',
+        requestId: state.activeRequestId,
+        status: 'ready'
+      });
+    }
+  }, [loading, state.status, state.requestedSection, state.activeRequestId, notifySectionReady]);
 
   // --- 2. Infinite Scroll Listener ---
   const handleScroll = useCallback(() => {
@@ -1028,7 +1048,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
       padding: '0 16px',
       flexDirection: isMobile ? 'column' : 'row'
     }}>
-      <div style={{ flex: 1, minWidth: 0, width: '100%', maxWidth: isMobile ? 'none' : 640 }}>
+      <TutorialTarget id="tour-feed" style={{ flex: 1, minWidth: 0, width: '100%', maxWidth: isMobile ? 'none' : 640 }}>
         
         {/* Header Superior - Abas Animadas (Estilo Twitter/X) */}
         <div className="hide-scroll" style={{ 
@@ -1069,9 +1089,10 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
         </div>
 
         {/* Composer de Postagem Ecológica */}
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-          style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 18, padding: 20, marginBottom: 20 }}>
+        <TutorialTarget id="tour-feed-composer">
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+            style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: 18, padding: 20, marginBottom: 20 }}>
           <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
             <div style={{ 
               width: 38, height: 38, borderRadius: 10, 
@@ -1079,7 +1100,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
               display: 'flex', alignItems: 'center', justifyContent: 'center', 
               fontSize: 18, fontWeight: 800, color: '#fff', flexShrink: 0 
             }}>
-              {localStorage.getItem(`user_avatar_${userId}`) || '🌱'}
+              {userAvatar}
             </div>
             <textarea 
               value={desc} 
@@ -1156,7 +1177,7 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
             </motion.button>
           </div>
         </motion.div>
-
+        </TutorialTarget>
         {/* Chips de Categoria para Filtragem Combinada */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
           {[{ id: 'todos', label: '🌍 Todos os Temas', color: T.accent }, ...CATS].map(f => (
@@ -1174,45 +1195,45 @@ export function FeedSection({ userId, isDarkMode }: FeedSectionProps) {
           ))}
         </div>
 
-        {/* Posts Renderizados */}
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {[1, 2, 3].map(n => <PostSkeleton key={n} isDarkMode={isDarkMode} />)}
-          </div>
-        ) : posts.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', background: T.bgCard, borderRadius: 18, border: `1px solid ${T.border}` }}>
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🌱</div>
-            <p style={{ fontSize: 18, fontWeight: 700, color: T.text, marginBottom: 8 }}>Nenhuma iniciativa sustentável por aqui</p>
-            <p style={{ fontSize: 14, color: T.textMuted }}>Muda a aba ou sê o primeiro a inspirar a comunidade!</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {posts.map((post, i) => (
-              <motion.div key={post.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.04, 0.2) }}>
-                <PostCard 
-                  post={post} 
-                  userId={userId} 
-                  onLike={handleLike} 
-                  onUnlike={handleUnlike}
-                  onDelete={handleDeletePost} 
-                  onEdit={handleEditPost}
-                  isDarkMode={isDarkMode} 
-                />
-              </motion.div>
-            ))}
-            
-            {/* Shimmer de Scroll Infinito */}
-            {loadingMore && <PostSkeleton isDarkMode={isDarkMode} />}
-            
-            {/* Indicador de Fim do Feed */}
-            {!hasMore && posts.length > 0 && (
-              <p style={{ fontSize: 13, color: T.textMuted, textAlign: 'center', padding: '20px 0' }}>
-                Tu estás totalmente atualizado! 🌱 Nenhuma outra publicação encontrada.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {[1, 2, 3].map(n => <PostSkeleton key={n} isDarkMode={isDarkMode} />)}
+            </div>
+          ) : posts.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', background: T.bgCard, borderRadius: 18, border: `1px solid ${T.border}` }}>
+              <div style={{ fontSize: 56, marginBottom: 16 }}>🌱</div>
+              <p style={{ fontSize: 18, fontWeight: 700, color: T.text, marginBottom: 8 }}>Nenhuma iniciativa sustentável por aqui</p>
+              <p style={{ fontSize: 14, color: T.textMuted }}>Muda a aba ou sê o primeiro a inspirar a comunidade!</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {posts.map((post, i) => (
+                <motion.div key={post.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.04, 0.2) }}>
+                  <PostCard 
+                    post={post} 
+                    userId={userId} 
+                    onLike={handleLike} 
+                    onUnlike={handleUnlike}
+                    onDelete={handleDeletePost} 
+                    onEdit={handleEditPost}
+                    isDarkMode={isDarkMode} 
+                  />
+                </motion.div>
+              ))}
+              
+              {/* Shimmer de Scroll Infinito */}
+              {loadingMore && <PostSkeleton isDarkMode={isDarkMode} />}
+              
+              {/* Indicador de Fim do Feed */}
+              {!hasMore && posts.length > 0 && (
+                <p style={{ fontSize: 13, color: T.textMuted, textAlign: 'center', padding: '20px 0' }}>
+                  Tu estás totalmente atualizado! 🌱 Nenhuma outra publicação encontrada.
+                </p>
+              )}
+            </div>
+          )}
+      </TutorialTarget>
 
       {/* Widgets / RightPanel (Escondido em Mobile e Responsivo) */}
       {!isMobile && (

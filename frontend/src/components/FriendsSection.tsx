@@ -7,6 +7,8 @@ import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { theme } from "../theme";
 import { apiFetch } from "../services/api";
+import { useTutorial } from '../tutorial/TutorialProvider';
+import { TutorialTarget } from '../tutorial/TutorialTarget';
 
 interface Friend {
   id: number;
@@ -67,6 +69,19 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
       loadData();
     }
   }, [userId]);
+
+  const { state, notifySectionReady } = useTutorial();
+
+  // Notificar o tutorial que a secção carregou os dados
+  useEffect(() => {
+    if (!loading && state.status === 'waiting' && state.requestedSection === 'friends' && state.activeRequestId) {
+      notifySectionReady({
+        section: 'friends',
+        requestId: state.activeRequestId,
+        status: 'ready'
+      });
+    }
+  }, [loading, state.status, state.requestedSection, state.activeRequestId, notifySectionReady]);
 
   const addFriend = async () => {
     if (!addValue.trim()) {
@@ -219,7 +234,8 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
         </div>
       </motion.div>
 
-      <Card className="overflow-hidden border-green-200 shadow-sm dark:border-green-800">
+      <TutorialTarget id="tour-friends-add">
+        <Card className="overflow-hidden border-green-200 shadow-sm dark:border-green-800">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
             <UserPlus size={20} className="text-green-600 dark:text-green-400" />
@@ -263,6 +279,7 @@ export function FriendsSection({ userId, onOpenChat }: FriendsSectionProps) {
           </div>
         </CardContent>
       </Card>
+      </TutorialTarget>
 
       {/* PEDIDOS PENDENTES */}
       {pendingRequests.length > 0 && (

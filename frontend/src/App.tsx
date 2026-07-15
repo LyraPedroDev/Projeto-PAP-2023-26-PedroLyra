@@ -9,7 +9,7 @@ import { AIFloatingButton } from './components/AIFloatingButton';
 import { AIModal } from './components/AIModal';
 
 type Page = 'landing' | 'login' | 'app';
-type AuthUser = { user_id: number; email: string; nome?: string; is_admin?: boolean };
+type AuthUser = { user_id: number; email: string; nome?: string; is_admin?: boolean; tutorial_completed?: boolean };
 type HistoryState = { page?: Page; registerMode?: boolean };
 
 const THEME_KEY = 'ecochat_theme';
@@ -26,6 +26,7 @@ export default function App() {
   });
   const [userId, setUserId] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [tutorialCompleted, setTutorialCompleted] = useState(false);
 
   const navigateTo = (nextPage: Page, options?: { replace?: boolean; registerMode?: boolean }) => {
     const state: HistoryState = { page: nextPage };
@@ -59,6 +60,7 @@ export default function App() {
         const user = data.user;
         setUserId(user.id);
         setIsAdmin(Boolean(user.is_admin));
+        setTutorialCompleted(Boolean(user.tutorial_completed));
         localStorage.setItem('user_id', String(user.id));
         localStorage.setItem('user_email', user.email);
         localStorage.setItem('user_name', user.nome);
@@ -158,6 +160,7 @@ export default function App() {
   const handleLogin = (userData: AuthUser) => {
     setUserId(userData.user_id);
     setIsAdmin(Boolean(userData.is_admin));
+    setTutorialCompleted(Boolean(userData.tutorial_completed));
     localStorage.setItem('user_id', String(userData.user_id));
     localStorage.setItem('user_email', userData.email);
     if (userData.nome) localStorage.setItem('user_name', userData.nome);
@@ -176,11 +179,25 @@ export default function App() {
     setPage('login');
     setUserId(null);
     setIsAdmin(false);
+    setTutorialCompleted(false);
     localStorage.removeItem('user_id');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_name');
     navigateTo('landing');
   };
+
+  useEffect(() => {
+    const handleOpenAI = () => setIsAIModalOpen(true);
+    const handleCloseAI = () => setIsAIModalOpen(false);
+
+    window.addEventListener('open-ai-modal', handleOpenAI);
+    window.addEventListener('close-ai-modal', handleCloseAI);
+
+    return () => {
+      window.removeEventListener('open-ai-modal', handleOpenAI);
+      window.removeEventListener('close-ai-modal', handleCloseAI);
+    };
+  }, []);
 
   if (isSessionLoading) {
     return <div style={{ minHeight: '100vh', background: '#040f07' }} />;
@@ -212,12 +229,13 @@ export default function App() {
           toggleTheme={toggleTheme}
           userId={userId}
           isAdmin={isAdmin}
+          initialTutorialCompleted={tutorialCompleted}
         />
       )}
       <Toaster />
 
       {page === 'app' && (
-        <AIFloatingButton onClick={() => setIsAIModalOpen(true)} />
+        <AIFloatingButton onClick={() => setIsAIModalOpen(prev => !prev)} />
       )}
       <AIModal
         isOpen={isAIModalOpen}

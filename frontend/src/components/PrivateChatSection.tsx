@@ -9,6 +9,8 @@ import {
   type Conversation,
   type PrivateMessage,
 } from '../services/privateChatApi';
+import { useTutorial } from '../tutorial/TutorialProvider';
+import { TutorialTarget } from '../tutorial/TutorialTarget';
 
 interface PrivateChatSectionProps {
   userId: number;
@@ -19,7 +21,7 @@ interface PrivateChatSectionProps {
   onGoToFriends?: () => void;
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// --- helpers ----------------------------------------------------------------
 
 function formatTime(iso: string): string {
   const d = new Date(iso);
@@ -44,7 +46,7 @@ function avatarInitials(nome: string): string {
     .toUpperCase();
 }
 
-// ─── componente ───────────────────────────────────────────────────────────────
+// --- componente -----------------------------------------------------------
 
 export function PrivateChatSection({
   userId,
@@ -86,7 +88,7 @@ export function PrivateChatSection({
   // Scroll
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // ── carregar conversas ────────────────────────────────────────────────────
+  // -- carregar conversas --------------------------------------------------
 
   const loadConversations = useCallback(async () => {
     try {
@@ -103,7 +105,20 @@ export function PrivateChatSection({
     loadConversations();
   }, [loadConversations]);
 
-  // ── carregar mensagens ao seleccionar amigo ───────────────────────────────
+  const { state, notifySectionReady } = useTutorial();
+
+  // Notificar o tutorial que a secção carregou os dados
+  useEffect(() => {
+    if (!convsLoading && state.status === 'waiting' && state.requestedSection === 'private' && state.activeRequestId) {
+      notifySectionReady({
+        section: 'private',
+        requestId: state.activeRequestId,
+        status: 'ready'
+      });
+    }
+  }, [convsLoading, state.status, state.requestedSection, state.activeRequestId, notifySectionReady]);
+
+  // -- carregar mensagens ao seleccionar amigo -----------------------------
 
   const loadMessages = useCallback(async (friendId: number) => {
     setMsgsLoading(true);
@@ -124,13 +139,13 @@ export function PrivateChatSection({
     }
   }, [activeFriend, loadMessages]);
 
-  // ── auto scroll ───────────────────────────────────────────────────────────
+  // -- auto scroll ---------------------------------------------------------
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // ── socket ────────────────────────────────────────────────────────────────
+  // -- socket --------------------------------------------------------------
 
   useEffect(() => {
     // Sincronizar estado imediatamente (socket pode já estar ligado)
@@ -175,7 +190,7 @@ export function PrivateChatSection({
     };
   }, [activeFriend, userId, loadConversations]);
 
-  // ── enviar mensagem ───────────────────────────────────────────────────────
+  // -- enviar mensagem -----------------------------------------------------
 
   const handleSend = () => {
     if (!input.trim() || !activeFriend || isSending) return;
@@ -196,7 +211,7 @@ export function PrivateChatSection({
     }
   };
 
-  // ── typing indicator ──────────────────────────────────────────────────────
+  // -- typing indicator ----------------------------------------------------
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -210,7 +225,7 @@ export function PrivateChatSection({
     }, 2000);
   };
 
-  // ── seleccionar amigo da lista ────────────────────────────────────────────
+  // -- seleccionar amigo da lista ------------------------------------------
 
   const selectFriend = (friend: { id: number; nome: string }) => {
     setActiveFriend(friend);
@@ -218,16 +233,16 @@ export function PrivateChatSection({
     setShowList(false);
   };
 
-  // ── filtrar conversas ─────────────────────────────────────────────────────
+  // -- filtrar conversas ---------------------------------------------------
 
   const filtered = conversations.filter(c =>
     c.friend.nome.toLowerCase().includes(search.toLowerCase()) ||
     c.friend.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // RENDER
-  // ═══════════════════════════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
   const sidebarStyle: React.CSSProperties = {
     width: 300,
@@ -262,8 +277,9 @@ export function PrivateChatSection({
         fontFamily: '"Inter","Segoe UI",system-ui,sans-serif',
       }}
     >
-      {/* ── LISTA DE CONVERSAS (sidebar esquerda) ─────────────────────────── */}
-      <div
+      {/* -- LISTA DE CONVERSAS (sidebar esquerda) ------------------------ */}
+      <TutorialTarget
+        id="tour-chat-sidebar"
         style={{
           ...sidebarStyle,
           display: showList || window.innerWidth >= 768 ? 'flex' : 'none',
@@ -457,9 +473,9 @@ export function PrivateChatSection({
             })
           )}
         </div>
-      </div>
+      </TutorialTarget>
 
-      {/* ── ÁREA DE MENSAGENS ──────────────────────────────────────────────── */}
+      {/* -- ÁREA DE MENSAGENS ---------------------------------------- */}
       <div
         style={{
           flex: 1,
@@ -796,3 +812,4 @@ export function PrivateChatSection({
     </div>
   );
 }
+

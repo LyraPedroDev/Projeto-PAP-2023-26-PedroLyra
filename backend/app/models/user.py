@@ -7,6 +7,7 @@ class Usuario(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)
+    tutorial_completed = db.Column(db.Boolean, default=False, nullable=False)
 
 
 class UserStats(db.Model):

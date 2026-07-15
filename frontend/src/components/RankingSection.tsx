@@ -8,6 +8,8 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { UserProfileModal } from './UserProfileModal';
 import { apiFetch, apiJson } from '../services/api';
+import { useTutorial } from '../tutorial/TutorialProvider';
+import { TutorialTarget } from '../tutorial/TutorialTarget';
 
 interface RankingUser {
   id: number;
@@ -28,6 +30,8 @@ export function RankingSection({ userId }: RankingSectionProps) {
   const [users, setUsers] = useState<RankingUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const { state, notifySectionReady } = useTutorial();
   
   // User profile modal states
   const [selectedUser, setSelectedUser] = useState<RankingUser | null>(null);
@@ -88,6 +92,17 @@ export function RankingSection({ userId }: RankingSectionProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // Notificar o tutorial que a secção carregou os dados
+  useEffect(() => {
+    if (!isLoading && state.status === 'waiting' && state.requestedSection === 'ranking' && state.activeRequestId) {
+      notifySectionReady({
+        section: 'ranking',
+        requestId: state.activeRequestId,
+        status: 'ready'
+      });
+    }
+  }, [isLoading, state.status, state.requestedSection, state.activeRequestId, notifySectionReady]);
+
   const getMedalIcon = (position: number) => {
     if (position === 1) return <Trophy className="text-yellow-500" size={24} />;
     if (position === 2) return <Medal className="text-gray-400" size={24} />;
@@ -147,7 +162,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
       </motion.div>
 
       {/* Top 3 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <TutorialTarget id="tour-ranking-board" className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {users.slice(0, 3).map((user, index) => {
           const isCurrentUser = user.id === userId;
           
@@ -192,7 +207,7 @@ export function RankingSection({ userId }: RankingSectionProps) {
             </motion.div>
           );
         })}
-      </div>
+      </TutorialTarget>
 
       {/* Rest of ranking */}
       {users.length > 3 && (

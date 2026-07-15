@@ -37,6 +37,7 @@ def get_profile(user_id: int):
         "amigos_count": amigos_count,
         "proximo_nivel": 2000 if stats.pontos < 2000 else 3000,
         "streak": stats.streak_atual,
+        "tutorial_completed": bool(usuario.tutorial_completed),
     }, None
 
 
@@ -66,5 +67,15 @@ def change_password(user_id: int, senha_atual: str, senha_nova: str):
         return False, "Senha atual incorreta"
 
     usuario.senha = generate_password_hash(senha_nova)
+    db.session.commit()
+    return True, None
+
+
+def complete_tutorial(user_id: int):
+    usuario = Usuario.query.get(user_id)
+    if not usuario:
+        return False, "Usuário não encontrado"
+    
+    usuario.tutorial_completed = True
     db.session.commit()
     return True, None

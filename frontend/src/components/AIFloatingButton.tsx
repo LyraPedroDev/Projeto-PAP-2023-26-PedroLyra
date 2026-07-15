@@ -30,26 +30,28 @@ export function AIFloatingButton({ onClick }: AIFloatingButtonProps) {
   // Se não for mobile, mostra o botão original
   if (!isMobile) {
     return (
+      <div id="tour-ecobot" style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 10001 }}>
       <motion.button
         onClick={onClick}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         style={{
-          position: 'fixed', bottom: '20px', right: '20px', width: '60px', height: '60px',
+          width: '60px', height: '60px',
           borderRadius: '50%', backgroundColor: '#10b981', border: 'none', cursor: 'pointer',
           fontSize: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)', zIndex: 90,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
         }}
         aria-label="Abrir assistente IA"
       >
         <Bot size={32} color="#fff" />
       </motion.button>
+      </div>
     );
   }
 
   // Speed Dial para Mobile
   return (
-    <div style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 90, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
+    <div id="tour-ecobot" style={{ position: 'fixed', bottom: '20px', right: '20px', zIndex: 10001, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
       <AnimatePresence>
         {isOpen && (
           <motion.div

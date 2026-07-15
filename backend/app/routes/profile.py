@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from ..services.profile_service import get_profile, update_profile, change_password
+from ..services.profile_service import get_profile, update_profile, change_password, complete_tutorial
 from ..auth_tokens import current_user, login_required
 
 profile_bp = Blueprint('profile', __name__)
@@ -55,3 +55,14 @@ def change_password_route():
         return jsonify({"erro": erro}), status
 
     return jsonify({"sucesso": True, "mensagem": "Senha alterada com sucesso!"})
+
+
+@profile_bp.route('/api/profile/tutorial', methods=['PUT', 'POST'])
+@login_required
+def tutorial_route():
+    user_id = current_user().id
+    ok, erro = complete_tutorial(user_id)
+    if not ok:
+        return jsonify({"erro": erro}), 400
+    
+    return jsonify({"sucesso": True, "mensagem": "Tutorial concluído!"})

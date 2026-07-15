@@ -6,6 +6,8 @@ import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
 import { toast } from 'sonner';
 import { apiFetch } from '../services/api';
+import { useTutorial } from '../tutorial/TutorialProvider';
+import { TutorialTarget } from '../tutorial/TutorialTarget';
 
 interface Task {
   id: number;
@@ -150,6 +152,19 @@ function MissionRow({ task, onToggle, isDarkMode }: { task: Task; onToggle: (tas
 export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { state, notifySectionReady } = useTutorial();
+
+  // Notificar o tutorial que a secção carregou os dados
+  useEffect(() => {
+    if (!isLoading && state.status === 'waiting' && state.requestedSection === 'tasks' && state.activeRequestId) {
+      notifySectionReady({
+        section: 'tasks',
+        requestId: state.activeRequestId,
+        status: 'ready'
+      });
+    }
+  }, [isLoading, state.status, state.requestedSection, state.activeRequestId, notifySectionReady]);
 
   // 🔥 BUSCAR TAREFAS DO BACKEND
   useEffect(() => {
@@ -301,7 +316,7 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
         </div>
       </motion.div>
 
-      <div className="space-y-10">
+      <TutorialTarget id="tour-tasks-list" className="space-y-10">
         {categories.map((category, catIndex) => {
           const categoryTasks = getTasksByCategory(category.id);
           const progress = getProgress(categoryTasks);
@@ -314,7 +329,7 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
               transition={{ delay: catIndex * 0.1 }}
             >
               <Card className="border-green-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/20 backdrop-blur-sm shadow-sm rounded-3xl overflow-hidden">
-                <CardHeader className="pb-4 bg-green-50/50 dark:bg-green-900/10 border-b border-green-100 dark:border-gray-800">
+                <CardHeader id={catIndex === 0 ? "tour-task-rewards" : undefined} className="pb-4 bg-green-50/50 dark:bg-green-900/10 border-b border-green-100 dark:border-gray-800">
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -330,7 +345,9 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
                       </span>
                     </div>
                   </div>
-                  <Progress value={progress} className="mt-4 h-3 bg-gray-200 dark:bg-gray-800" />
+                  <div>
+                    <Progress value={progress} className="mt-4 h-3 bg-gray-200 dark:bg-gray-800" />
+                  </div>
                 </CardHeader>
                 
                 <CardContent className="p-4 sm:p-6">
@@ -366,7 +383,7 @@ export function TasksSection({ userId, isDarkMode = false }: TasksSectionProps) 
             </motion.div>
           );
         })}
-      </div>
+      </TutorialTarget>
     </div>
   );
 }

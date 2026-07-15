@@ -27,6 +27,7 @@ def login():
                 "nome": usuario.nome,
                 "email": usuario.email,
                 "is_admin": bool(usuario.is_admin),
+                "tutorial_completed": bool(usuario.tutorial_completed),
             }
         }))
         return set_auth_cookies(response, usuario)
@@ -61,8 +62,9 @@ def me():
         'user': {
             'id': user.id,
             'nome': user.nome,
-            'email': user.email,
-            'is_admin': bool(user.is_admin),
+            "email": user.email,
+            "is_admin": bool(user.is_admin),
+            "tutorial_completed": bool(user.tutorial_completed),
         }
     })
 
@@ -85,8 +87,9 @@ def refresh():
         'user': {
             'id': user.id,
             'nome': user.nome,
-            'email': user.email,
-            'is_admin': bool(user.is_admin),
+            "email": user.email,
+            "is_admin": bool(user.is_admin),
+            "tutorial_completed": bool(user.tutorial_completed),
         }
     }))
     return set_auth_cookies(response, user)

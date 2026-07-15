@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useDragControls } from 'motion/react';
 import { Send, Bot, User, X } from 'lucide-react';
 import ecobotAvatar from '../assets/ecobot_avatar.png';
-
-
+import { useUserAvatar } from '../hooks/useUserAvatar';
 interface Message {
   id: number;
   text: string;
@@ -17,32 +16,6 @@ interface AIModalProps {
   isDarkMode?: boolean;
 }
 
-const modalVariants = {
-  hidden: {
-    opacity: 0,
-    y: 50,
-    scale: 0.95,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.5, // 500ms de abertura
-      ease: 'easeOut',
-      delay: 0,
-    },
-  },
-  exit: {
-    opacity: 0,
-    y: 30,
-    scale: 0.95,
-    transition: {
-      duration: 0.3, // 300ms de fecho
-      ease: 'easeIn',
-    },
-  },
-};
 
 const messageVariants = {
   hidden: { opacity: 0, y: 12, scale: 0.98 },
@@ -54,9 +27,11 @@ const messageVariants = {
   }
 };
 
+
+
 export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
   const userId = localStorage.getItem('user_id');
-  const userAvatar = userId ? (localStorage.getItem(`user_avatar_${userId}`) || '🌱') : '🌱';
+  const userAvatar = useUserAvatar(userId);
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -98,6 +73,7 @@ export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
   }, []);
 
   const isMobile = windowWidth < 768;
+  const dragControls = useDragControls();
 
   // Fechar ao pressionar Escape
   useEffect(() => {
@@ -164,18 +140,42 @@ export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
 
   // --- Estilos Inline Requisitos do Professor ---
   
+  const dynamicModalVariants = {
+    hidden: {
+      opacity: 0,
+      y: isMobile ? '-40%' : -20,
+      x: isMobile ? '-50%' : 0,
+      scale: 0.95,
+    },
+    visible: {
+      opacity: 1,
+      y: isMobile ? '-50%' : 0,
+      x: isMobile ? '-50%' : 0,
+      scale: 1,
+      transition: { type: 'spring', damping: 25, stiffness: 300 }
+    },
+    exit: {
+      opacity: 0,
+      y: isMobile ? '-40%' : -20,
+      x: isMobile ? '-50%' : 0,
+      scale: 0.95,
+      transition: { duration: 0.2 }
+    }
+  };
+
   const modalStyle = {
     position: 'fixed' as const,
-    bottom: isMobile ? '80px' : '100px',
-    right: isMobile ? '10px' : '20px',
-    width: isMobile ? 'calc(100% - 20px)' : '380px',
-    maxWidth: '380px',
-    height: isMobile ? '70vh' : '480px',
+    top: isMobile ? '50%' : '80px',
+    left: isMobile ? '50%' : 'auto',
+    right: isMobile ? 'auto' : '20px',
+    width: isMobile ? 'calc(100% - 40px)' : '420px',
+    maxWidth: '500px',
+    height: isMobile ? '70vh' : '580px',
     borderRadius: '16px',
     backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
     border: `1px solid ${isDarkMode ? '#333333' : '#e2e8f0'}`,
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.15)',
-    zIndex: 60,
+    zIndex: 10000,
     display: 'flex',
     flexDirection: 'column' as const,
     overflow: 'hidden',
@@ -304,7 +304,7 @@ export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-end justify-end pointer-events-none"
+          className="fixed inset-0 z-[10000] flex items-end justify-end pointer-events-none"
         >
           {/* Overlay invisível/semi-transparente para fechar ao clicar fora */}
           <div 
@@ -312,18 +312,27 @@ export function AIModal({ isOpen, onClose, isDarkMode = false }: AIModalProps) {
             onClick={onClose}
           />
 
-          {/* Modal / Popup de Chat */}
+          {/* Modal Content */}
           <motion.div
-            ref={modalRef}
-            variants={modalVariants}
+            id="tour-ai-modal"
+            className="flex flex-col relative pointer-events-auto"
+            variants={dynamicModalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
             style={modalStyle}
-            className="pointer-events-auto"
+            drag={!isMobile}
+            dragListener={false}
+            dragControls={dragControls}
+            dragMomentum={false}
           >
             {/* Header do Chat (Verde EcoChat c/ Sombra) */}
-            <div style={headerStyle}>
+            <div 
+              style={{ ...headerStyle, cursor: !isMobile ? 'grab' : 'default' }}
+              onPointerDown={(e) => {
+                if (!isMobile) dragControls.start(e);
+              }}
+            >
               <div className="flex items-center gap-3">
                 <div 
                   className="w-10 h-10 flex items-center justify-center rounded-full border overflow-hidden"

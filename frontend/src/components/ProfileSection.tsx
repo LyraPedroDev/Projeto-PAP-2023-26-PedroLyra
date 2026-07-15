@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, EyeOff, User, Mail, Lock, LogOut, Save, Flame, Sun, Moon } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, LogOut, Save, Flame, Sun, Moon, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Button } from './ui/button';
@@ -10,6 +10,8 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { toast } from 'sonner';
 import { apiFetch } from '../services/api';
+import { useTutorial } from '../tutorial/TutorialProvider';
+import { TutorialTarget } from '../tutorial/TutorialTarget';
 
 interface ProfileSectionProps {
   onLogout: () => void;
@@ -28,6 +30,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
     confirmPassword: ''
   });
 
+
   const [userStats, setUserStats] = useState({
     level: 'Carregando...',
     points: 0,
@@ -43,9 +46,24 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [selectedTempAvatar, setSelectedTempAvatar] = useState(userStats.avatar);
 
+  const { state, notifySectionReady, startTutorial } = useTutorial();
+
+  // Notificar o tutorial que a secção carregou os dados
+  useEffect(() => {
+    if (!isLoading && state.status === 'waiting' && state.requestedSection === 'profile' && state.activeRequestId) {
+      notifySectionReady({
+        section: 'profile',
+        requestId: state.activeRequestId,
+        status: 'ready'
+      });
+    }
+  }, [isLoading, state.status, state.requestedSection, state.activeRequestId, notifySectionReady]);
+
   const EMOJIS = [
-    '🌱', '🌿', '🌲', '🍀', '🍃', '🦁', '🐼', '🦊', '🐨', '🐳',
-    '😎', '🤓', '😊', '🔥', '✨', '🌍', '⚡', '💧', '♻️', '🏆'
+    '🌱', '🌿', '🌲', '🍀', '🍃',
+    '🦁', '🐼', '🦊', '🐨', '🐳',
+    '😎', '🤓', '😊', '🔥', '✨',
+    '🌍', '⚡', '💧', '♻️', '🏆'
   ];
 
   const handleSaveAvatar = () => {
@@ -53,7 +71,14 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
     setUserStats(prev => ({ ...prev, avatar: selectedTempAvatar }));
     setIsAvatarModalOpen(false);
     toast.success('Imagem de perfil atualizada! 🤩');
+    
     // Forçar recarga da Sidebar/Header disparando evento global
+    window.dispatchEvent(new CustomEvent('user-avatar-updated', {
+      detail: {
+        userId,
+        avatar: selectedTempAvatar
+      }
+    }));
     window.dispatchEvent(new Event('storage'));
   };
 
@@ -188,7 +213,8 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <>
+      <div className="max-w-5xl mx-auto space-y-6">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -217,6 +243,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
       </motion.div>
 
       {/* Profile overview */}
+      <TutorialTarget id="tour-profile-stats">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -325,7 +352,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
           </CardContent>
         </Card>
       </motion.div>
-
+      </TutorialTarget>
       {/* Achievements */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -497,48 +524,61 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
       </motion.div>
 
 
-      {/* Modal de Seleção de Avatar */}
-      <AnimatePresence>
-        {isAvatarModalOpen && (
-          <div
-            onClick={() => setIsAvatarModalOpen(false)}
+
+      {/* Tutorial review */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        <Card className="border-green-200 shadow-sm dark:border-gray-700">
+          <CardHeader>
+            <CardTitle className="dark:text-gray-200">Tutorial</CardTitle>
+            <CardDescription className="dark:text-gray-400">Revê o walkthrough do EcoChat quando precisares.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => startTutorial('profile', true)}
+              className="border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-300 dark:hover:bg-green-900/20"
+            >
+              <RotateCcw size={18} className="mr-2" />
+              Rever tutorial
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+
+    {/* Avatar Selection Modal */}
+    <AnimatePresence>
+      {isAvatarModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              backdropFilter: 'blur(4px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 100,
-              padding: '16px',
+              position: 'relative',
+              background: isDarkMode ? '#1f2937' : '#ffffff',
+              borderRadius: '24px',
+              padding: '24px',
+              width: '100%',
+              maxWidth: '380px',
+              boxShadow: '0 24px 48px rgba(0,0,0,0.2)',
+              border: isDarkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)'
             }}
           >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                backgroundColor: isDarkMode ? '#060e08' : '#ffffff',
-                color: isDarkMode ? '#ffffff' : '#0d1f14',
-                borderRadius: '24px',
-                padding: '28px',
-                width: '100%',
-                maxWidth: '400px',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                border: isDarkMode ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(16, 185, 129, 0.1)',
-                textAlign: 'center'
-              }}
-            >
-              <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '8px' }}>Alterar Imagem de Perfil</h3>
-              <p style={{ fontSize: '13px', opacity: 0.6, marginBottom: '20px' }}>Escolha um emoji para representar sua jornada ecológica</p>
-              
-              {/* Preview */}
-              <div
-                style={{
-                  width: '72px',
-                  height: '72px',
+            <h2 style={{ fontSize: '20px', fontWeight: 800, textAlign: 'center', marginBottom: '24px', color: isDarkMode ? '#ffffff' : '#000000' }}>
+              Escolhe o teu Avatar
+            </h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div 
+                style={{ 
+                  width: '72px', 
+                  height: '72px', 
                   borderRadius: '20px',
                   background: 'linear-gradient(135deg, #10b981, #059669)',
                   display: 'flex',
@@ -584,7 +624,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
                 <button
                   onClick={() => setIsAvatarModalOpen(false)}
                   style={{
@@ -593,7 +633,7 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                     borderRadius: '10px',
                     border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.08)',
                     background: 'transparent',
-                    color: 'inherit',
+                    color: isDarkMode ? '#ffffff' : '#000000',
                     fontSize: '13px',
                     fontWeight: 600,
                     cursor: 'pointer'
@@ -618,10 +658,11 @@ export function ProfileSection({ onLogout, userId, isDarkMode = false, toggleThe
                   Confirmar
                 </button>
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+    </>
   );
 }
