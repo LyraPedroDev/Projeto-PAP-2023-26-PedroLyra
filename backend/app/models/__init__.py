@@ -56,6 +56,12 @@ def init_db():
             f"ALTER TABLE usuario ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT {default_value}"
         ))
         db.session.commit()
+    if 'tutorial_completed' not in columns:
+        default_value = "false" if db.engine.dialect.name == "postgresql" else "0"
+        db.session.execute(text(
+            f"ALTER TABLE usuario ADD COLUMN tutorial_completed BOOLEAN NOT NULL DEFAULT {default_value}"
+        ))
+        db.session.commit()
     create_indexes()
 
     usuarios_teste = [
